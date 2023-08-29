@@ -2,6 +2,7 @@
 #
 # Tool to accss job websites, generate a report of their current states, and
 # compare that report to previous reports.
+import datetime
 import requests
 from bs4 import BeautifulSoup
 
@@ -17,22 +18,31 @@ class ReportItem:
   ROW_LAST_DATE_CHECKED_HEADER = "Last Date Checked"
   ROW_ORIGINAL_AD_HEADER = "Original Ad Text"
 
-  def __init__(self):
-    self.company = ""
-    self.job_title = ""
-    self.url = ""
-    self.date_created = ""
+  def __init__(self,
+      company = None,
+      job_title = None,
+      url = None,
+      date_created = None,
+      applied = None,
+      ignored = None,
+      last_access = None,
+      last_check = None,
+      original_ad = None):
+    self.company = company
+    self.job_title = job_title
+    self.url = url
+    self.date_created = date_created
     # Populated outside of report, just pass through
-    self.date_applied = ""
+    self.date_applied = applied
+    self.s_ignored = False
     # Last time we were able to access this job
-    self.date_accessed = ""
+    self.date_accessed = last_access
     # Last time we tried to access this role, diverges from date_accessed when
     # job is taken down
-    self.date_checked = ""
+    self.date_checked = last_check
     # Text from the first time this ad was posted, generated the 
-    self.original_ad_text = ""
-    self.ad_history = dict()
-
+    self.original_ad_text = original_ad
+  
   @staticmethod
   def format_row(company,job_title,url,date_created,applied,ignored,last_access,last_check,original_ad,updated_ads=[]):
     return "{},{},{},{},{},{},{},{},{}".format(
@@ -62,6 +72,7 @@ class ReportItem:
 class GoogleCrawler():
   def __init__(self):
     self.company_name = "Google"
+    self.url_root = "https://www.google.com/about/careers/applications/"
     self.job_site_urls = [
       # Remote jobs
       #"https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&has_remote=true&target_level=EARLY&target_level=MID",
@@ -69,13 +80,41 @@ class GoogleCrawler():
       # NY Jobs
       "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA"]
 
+  def access_content(self, url):
+    print("Accessing job {}".format(url))
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+    text = \
+     soup.find("div", class_="KwJkGe").text \
+     + "\n\n\n" \
+     + soup.find("div", class_="aG5W3").text
+    return text
+
+  def parse_posting(self, post_content):
+    time_now = str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M'))
+    job_title = post_content.find("h3", class_="QJPWVe").text
+    url = self.url_root + post_content.find("a", class_="WpHeLc")['href']
+    date_created = time_now
+    applied = ""
+    ignored = ""
+    last_access = time_now
+    last_check = time_now
+    original_ad = self.access_content(url)
+    return ReportItem(self.company_name,
+      job_title,
+      url,
+      date_created,
+      applied,
+      ignored,
+      last_access,
+      last_check,
+      original_ad)
+
   def access_pages(self, url):
     print("Accessing {}...".format(url))
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
     new_postings = soup.find_all("div", class_="sMn82b")
-    print("Jobs")
-    print(new_postings)
 
     postings = [] + new_postings
     i = 1
@@ -86,13 +125,14 @@ class GoogleCrawler():
       new_postings = soup.find_all("div", class_="sMn82b")
       postings = postings + new_postings
     
-    return postings
+    return [self.parse_posting(p) for p in postings]
   
-
   def crawl(self):
     print("Crawling for {}...".format(self.company_name))
+    new_jobs = []
     for url in self.job_site_urls:
-      self.access_page(url)
+      new_jobs = new_jobs + self.access_pages(url)
+    return new_jobs
 
 if __name__ == "__main__":
   print("Generating report...")
@@ -103,6 +143,7 @@ if __name__ == "__main__":
   
   # Test Crawler works
   crawler = GoogleCrawler()
-  crawler.crawl()
+  jobs = crawler.crawl()
+  print(len(jobs))
 
   print("Script complete.")
