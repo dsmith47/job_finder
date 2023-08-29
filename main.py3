@@ -69,13 +69,25 @@ class GoogleCrawler():
       # NY Jobs
       "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA"]
 
-  def access_page(self, url):
+  def access_pages(self, url):
     print("Accessing {}...".format(url))
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
-    postings = soup.find_all("div", class_="sMn82b")
+    new_postings = soup.find_all("div", class_="sMn82b")
     print("Jobs")
-    print(postings)
+    print(new_postings)
+
+    postings = [] + new_postings
+    i = 1
+    while len(new_postings) > 0:
+      i = i + 1
+      page = requests.get(url+"&page={}".format(i))
+      soup = BeautifulSoup(page.content, "html.parser")
+      new_postings = soup.find_all("div", class_="sMn82b")
+      postings = postings + new_postings
+    
+    return postings
+  
 
   def crawl(self):
     print("Crawling for {}...".format(self.company_name))
