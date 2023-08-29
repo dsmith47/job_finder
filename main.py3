@@ -2,7 +2,8 @@
 #
 # Tool to accss job websites, generate a report of their current states, and
 # compare that report to previous reports.
-
+import requests
+from bs4 import BeautifulSoup
 
 # A Single job, with descriptive state and some history, writes into a row
 class ReportItem:
@@ -58,8 +59,35 @@ class ReportItem:
       self.ROW_ORIGINAL_AD_HEADER)
 
 
+class GoogleCrawler():
+  def __init__(self):
+    self.company_name = "Google"
+    self.job_site_urls = [
+      # Remote jobs
+      #"https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&has_remote=true&target_level=EARLY&target_level=MID",
+      # NY Jobs
+      "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA"]
+
+  def access_page(self, url):
+    print("Accessing {}...".format(url))
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+    print(soup)
+
+  def crawl(self):
+    print("Crawling for {}...".format(self.company_name))
+    for url in self.job_site_urls:
+      self.access_page(url)
+
 if __name__ == "__main__":
   print("Generating report...")
+  
+  # Test ReportItem works
   item = ReportItem()
   print(item.header())
+  
+  # Test Crawler works
+  crawler = GoogleCrawler()
+  crawler.crawl()
+
   print("Script complete.")
