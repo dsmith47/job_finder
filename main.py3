@@ -34,7 +34,7 @@ class ReportItem:
     self.date_created = date_created
     # Populated outside of report, just pass through
     self.date_applied = applied
-    self.s_ignored = False
+    self.is_ignored = False
     # Last time we were able to access this job
     self.date_accessed = last_access
     # Last time we tried to access this role, diverges from date_accessed when
@@ -45,7 +45,7 @@ class ReportItem:
   
   @staticmethod
   def format_row(company,job_title,url,date_created,applied,ignored,last_access,last_check,original_ad,updated_ads=[]):
-    return "{},{},{},{},{},{},{},{},{}".format(
+    return '"{}","{}","{}","{}","{}","{}","{}","{}","{}"'.format(
       company,
       job_title,
       url,
@@ -55,6 +55,19 @@ class ReportItem:
       last_access,
       last_check,
       original_ad)
+
+  def __str__(self):
+    return self.format_row(
+      self.company,
+      self.job_title,
+      self.url,
+      self.date_created,
+      self.date_applied,
+      self.is_ignored,
+      self.date_accessed,
+      self.date_checked,
+      self.original_ad_text)
+
 
   def header(self):
     return self.format_row(
@@ -145,5 +158,9 @@ if __name__ == "__main__":
   crawler = GoogleCrawler()
   jobs = crawler.crawl()
   print(len(jobs))
+
+  print(jobs[0].header())
+  for job in jobs:
+    print(job)
 
   print("Script complete.")
