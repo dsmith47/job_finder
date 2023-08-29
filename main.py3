@@ -65,6 +65,7 @@ class GoogleCrawler():
     self.job_site_urls = [
       # Remote jobs
       #"https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&has_remote=true&target_level=EARLY&target_level=MID",
+      #"https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA&page=2",
       # NY Jobs
       "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA"]
 
@@ -72,7 +73,9 @@ class GoogleCrawler():
     print("Accessing {}...".format(url))
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
-    print(soup)
+    postings = soup.find_all("div", class_="sMn82b")
+    print("Jobs")
+    print(postings)
 
   def crawl(self):
     print("Crawling for {}...".format(self.company_name))
