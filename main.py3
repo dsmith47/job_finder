@@ -45,11 +45,12 @@ class ReportItem:
     # job is taken down
     self.date_checked = last_check
     # Text from the first time this ad was posted, generated the 
-    self.original_ad_text = original_ad
+    self.original_ad = original_ad
+    self.updated_ads = []
  
   @staticmethod
   def from_row(header,row):
-    return ReportItem(
+    item = ReportItem(
       row[header.index(ReportItem.ROW_COMPANY_HEADER)],
       row[header.index(ReportItem.ROW_JOB_TITLE_HEADER)],
       row[header.index(ReportItem.ROW_URL_HEADER)],
@@ -58,10 +59,13 @@ class ReportItem:
       row[header.index(ReportItem.ROW_IGNORED_HEADER)],
       row[header.index(ReportItem.ROW_LAST_DATE_ACCESSED_HEADER)],
       row[header.index(ReportItem.ROW_LAST_DATE_CHECKED_HEADER)])
+    if len(row) > 8:
+      item.updated_ads = row[8:]
+    return item
  
   @staticmethod
   def format_row(company,job_title,url,date_created,applied,ignored,last_access,last_check,original_ad="",updated_ads=[]):
-    return '{},{},{},{},{},{},{},{},{}'.format(
+    output = '{},{},{},{},{},{},{},{},{}'.format(
       company,
       job_title,
       url,
@@ -71,6 +75,9 @@ class ReportItem:
       last_access,
       last_check,
       original_ad)
+    for ad in updated_ads:
+      output = output + ',' + ad
+    return output
 
   def __str__(self):
     return self.format_row(
@@ -83,7 +90,6 @@ class ReportItem:
       self.date_accessed,
       self.date_checked)
 
-
   def header(self):
     return [self.ROW_COMPANY_HEADER,
       self.ROW_JOB_TITLE_HEADER,
@@ -92,17 +98,22 @@ class ReportItem:
       self.ROW_APPLIED_HEADER,
       self.ROW_IGNORED_HEADER,
       self.ROW_LAST_DATE_ACCESSED_HEADER,
-      self.ROW_LAST_DATE_CHECKED_HEADER]
+      self.ROW_LAST_DATE_CHECKED_HEADER,
+      self.ROW_ORIGINAL_AD_HEADER]
 
   def as_array(self):
-    return [self.company,
+    output = [self.company,
       self.job_title,
       self.url,
       self.date_created,
       self.date_applied,
       self.is_ignored,
       self.date_accessed,
-      self.date_checked]
+      self.date_checked,
+      self.original_ad] 
+    if len(self.updated_ads) > 0:
+      output = output + self.updated_ads
+    return output
 
 
 class GoogleCrawler():
@@ -185,8 +196,6 @@ if __name__ == "__main__":
     file_reader = csv.reader(report_file)
     header = next(file_reader)
     for row in file_reader:
-      print(header)
-      print(row)
       job = ReportItem.from_row(header, row)
       all_jobs[job.url] = job
 
@@ -204,6 +213,11 @@ if __name__ == "__main__":
         all_jobs[job.url].date_applied = job.date_applied
       all_jobs[job.url].date_accessed = max(all_jobs[job.url].date_created, job.date_created)
       all_jobs[job.url].date_checked = max(all_jobs[job.url].date_created, job.date_created)
+      if all_jobs[job.url].original_ad != job.original_ad or (len(all_jobs[job.url].updated_ads)>0 and all_jobs[job.url].updated_ads[-1] != job.original_ad):
+        print("Difference in jobs")
+        all_jobs[job.url].updated_ads.append("["+job.date_created+"]\n"+job.original_ad)
+        print(all_jobs[job.url].as_array())
+        print(all_jobs[job.url].updated_ads)
 
   # Write output
   outfile = open(FILE_NAME + now_filepath + ".csv", "w", newline='')
