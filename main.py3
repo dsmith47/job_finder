@@ -115,17 +115,21 @@ class ReportItem:
       output = output + self.updated_ads
     return output
 
+class Crawler():
+  def __init__(self, company_name=None, url_root=None, job_site_urls=[]):
+    self.company_name = company_name
+    self.url_root = url_root
+    self.job_site_urls = job_site_urls
 
-class GoogleCrawler():
+class GoogleCrawler(Crawler):
   def __init__(self):
-    self.company_name = "Google"
-    self.url_root = "https://www.google.com/about/careers/applications/"
-    self.job_site_urls = [
-      # Remote jobs
+    super().__init__("Google",
+     "https://www.google.com/about/careers/applications/",
+     [ # Remote jobs
       "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&has_remote=true&target_level=EARLY&target_level=MID",
       # NY Jobs
-      "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA"]
-
+      "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA"])
+  
   def access_content(self, url):
     print("Accessing job {}".format(url))
     page = requests.get(url)
@@ -214,10 +218,7 @@ if __name__ == "__main__":
       all_jobs[job.url].date_accessed = max(all_jobs[job.url].date_created, job.date_created)
       all_jobs[job.url].date_checked = max(all_jobs[job.url].date_created, job.date_created)
       if all_jobs[job.url].original_ad != job.original_ad or (len(all_jobs[job.url].updated_ads)>0 and all_jobs[job.url].updated_ads[-1] != job.original_ad):
-        print("Difference in jobs")
         all_jobs[job.url].updated_ads.append("["+job.date_created+"]\n"+job.original_ad)
-        print(all_jobs[job.url].as_array())
-        print(all_jobs[job.url].updated_ads)
 
   # Write output
   outfile = open(FILE_NAME + now_filepath + ".csv", "w", newline='')
