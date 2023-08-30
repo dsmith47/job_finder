@@ -2,11 +2,15 @@
 #
 # Tool to accss job websites, generate a report of their current states, and
 # compare that report to previous reports.
+import csv
 import datetime
+import os
 import requests
 from bs4 import BeautifulSoup
 
 # A Single job, with descriptive state and some history, writes into a row
+# TODO: can't support the newlines/commas that appear in job text body,
+#  need to implement support for this to compare ads over time
 class ReportItem:
   ROW_COMPANY_HEADER = "Company"
   ROW_JOB_TITLE_HEADER = "Job Title"
@@ -42,10 +46,22 @@ class ReportItem:
     self.date_checked = last_check
     # Text from the first time this ad was posted, generated the 
     self.original_ad_text = original_ad
-  
+ 
   @staticmethod
-  def format_row(company,job_title,url,date_created,applied,ignored,last_access,last_check,original_ad,updated_ads=[]):
-    return '"{}","{}","{}","{}","{}","{}","{}","{}","{}"'.format(
+  def from_row(header,row):
+    return ReportItem(
+      row[header.index(ReportItem.ROW_COMPANY_HEADER)],
+      row[header.index(ReportItem.ROW_JOB_TITLE_HEADER)],
+      row[header.index(ReportItem.ROW_URL_HEADER)],
+      row[header.index(ReportItem.ROW_DATE_CREATED_HEADER)],
+      row[header.index(ReportItem.ROW_APPLIED_HEADER)],
+      row[header.index(ReportItem.ROW_IGNORED_HEADER)],
+      row[header.index(ReportItem.ROW_LAST_DATE_ACCESSED_HEADER)],
+      row[header.index(ReportItem.ROW_LAST_DATE_CHECKED_HEADER)])
+ 
+  @staticmethod
+  def format_row(company,job_title,url,date_created,applied,ignored,last_access,last_check,original_ad="",updated_ads=[]):
+    return '{},{},{},{},{},{},{},{},{}'.format(
       company,
       job_title,
       url,
@@ -65,21 +81,28 @@ class ReportItem:
       self.date_applied,
       self.is_ignored,
       self.date_accessed,
-      self.date_checked,
-      self.original_ad_text)
+      self.date_checked)
 
 
   def header(self):
-    return self.format_row(
-      self.ROW_COMPANY_HEADER,
+    return [self.ROW_COMPANY_HEADER,
       self.ROW_JOB_TITLE_HEADER,
       self.ROW_URL_HEADER,
       self.ROW_DATE_CREATED_HEADER,
       self.ROW_APPLIED_HEADER,
       self.ROW_IGNORED_HEADER,
       self.ROW_LAST_DATE_ACCESSED_HEADER,
-      self.ROW_LAST_DATE_CHECKED_HEADER,
-      self.ROW_ORIGINAL_AD_HEADER)
+      self.ROW_LAST_DATE_CHECKED_HEADER]
+
+  def as_array(self):
+    return [self.company,
+      self.job_title,
+      self.url,
+      self.date_created,
+      self.date_applied,
+      self.is_ignored,
+      self.date_accessed,
+      self.date_checked]
 
 
 class GoogleCrawler():
@@ -88,8 +111,7 @@ class GoogleCrawler():
     self.url_root = "https://www.google.com/about/careers/applications/"
     self.job_site_urls = [
       # Remote jobs
-      #"https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&has_remote=true&target_level=EARLY&target_level=MID",
-      #"https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA&page=2",
+      "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&has_remote=true&target_level=EARLY&target_level=MID",
       # NY Jobs
       "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA"]
 
@@ -149,18 +171,45 @@ class GoogleCrawler():
 
 if __name__ == "__main__":
   print("Generating report...")
+  REPORTS_DIR = "reports/"
+  FILE_NAME = REPORTS_DIR + "job-report_"
+  now = datetime.datetime.now()
+  now_datestring = now.strftime('%Y-%m-%d %H:%M')
+  now_filepath = now.strftime('%Y-%m-%d_%H%M')
   
-  # Test ReportItem works
-  item = ReportItem()
-  print(item.header())
-  
-  # Test Crawler works
+  # Load previous jobs  
+  all_jobs = dict()
+  old_reports = os.listdir(REPORTS_DIR)
+  if len(old_reports) > 0:
+    report_file = open(REPORTS_DIR + old_reports[0], "r", newline='')
+    file_reader = csv.reader(report_file)
+    header = next(file_reader)
+    for row in file_reader:
+      print(header)
+      print(row)
+      job = ReportItem.from_row(header, row)
+      all_jobs[job.url] = job
+
+  # Crawl job sites
   crawler = GoogleCrawler()
   jobs = crawler.crawl()
-  print(len(jobs))
 
-  print(jobs[0].header())
+  # Match jobs to already-known jobs
   for job in jobs:
-    print(job)
+    if job.url not in all_jobs:
+      all_jobs[job.url] = job
+    else:
+      all_jobs[job.url].date_created = min(all_jobs[job.url].date_created, job.date_created)
+      if len(all_jobs[job.url].date_applied) < 1:
+        all_jobs[job.url].date_applied = job.date_applied
+      all_jobs[job.url].date_accessed = max(all_jobs[job.url].date_created, job.date_created)
+      all_jobs[job.url].date_checked = max(all_jobs[job.url].date_created, job.date_created)
 
+  # Write output
+  outfile = open(FILE_NAME + now_filepath + ".csv", "w", newline='')
+  output_writer = csv.writer(outfile)
+  output_writer.writerow(jobs[0].header())
+  for job in all_jobs.values():
+    output_writer.writerow(job.as_array())
+  outfile.close()
   print("Script complete.")
