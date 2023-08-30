@@ -90,16 +90,17 @@ class ReportItem:
       self.date_accessed,
       self.date_checked)
 
-  def header(self):
-    return [self.ROW_COMPANY_HEADER,
-      self.ROW_JOB_TITLE_HEADER,
-      self.ROW_URL_HEADER,
-      self.ROW_DATE_CREATED_HEADER,
-      self.ROW_APPLIED_HEADER,
-      self.ROW_IGNORED_HEADER,
-      self.ROW_LAST_DATE_ACCESSED_HEADER,
-      self.ROW_LAST_DATE_CHECKED_HEADER,
-      self.ROW_ORIGINAL_AD_HEADER]
+  @staticmethod
+  def header():
+    return [ReportItem.ROW_COMPANY_HEADER,
+      ReportItem.ROW_JOB_TITLE_HEADER,
+      ReportItem.ROW_URL_HEADER,
+      ReportItem.ROW_DATE_CREATED_HEADER,
+      ReportItem.ROW_APPLIED_HEADER,
+      ReportItem.ROW_IGNORED_HEADER,
+      ReportItem.ROW_LAST_DATE_ACCESSED_HEADER,
+      ReportItem.ROW_LAST_DATE_CHECKED_HEADER,
+      ReportItem.ROW_ORIGINAL_AD_HEADER]
 
   def as_array(self):
     output = [self.company,
@@ -307,7 +308,7 @@ if __name__ == "__main__":
   # Write output
   outfile = open(FILE_NAME + now_filepath + ".csv", "w", newline='')
   output_writer = csv.writer(outfile)
-  output_writer.writerow(jobs[0].header())
+  output_writer.writerow(ReportItem.header())
   for job in all_jobs.values():
     output_writer.writerow(job.as_array())
   outfile.close()
