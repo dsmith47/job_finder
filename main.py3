@@ -234,7 +234,7 @@ class MicrosoftCrawler(Crawler):
 class AppleCrawler(Crawler):
   def __init__(self):
     super().__init__("Apple",
-     "",
+     "https://jobs.apple.com",
      [ 
       # NY Jobs
      "https://jobs.apple.com/en-us/search?search=software%20engineer&sort=newest&location=new-york-state985"])
@@ -243,26 +243,51 @@ class AppleCrawler(Crawler):
     print("Accessing {}...".format(url))
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
-    new_postings = soup.find_all("div", class_="ms-Stack css-409")
-    print(soup)
+    new_postings = soup.find_all("a", class_="table--advanced-search__title")
     postings = [] + new_postings
     i = 1
     while len(new_postings) > 0:
       i = i + 1
       page = requests.get(url+"&page={}".format(i))
       soup = BeautifulSoup(page.content, "html.parser")
-      new_postings = soup.find_all("div", class_="ms-Stack css-409")
+      new_postings = soup.find_all("a", class_="table--advanced-search__title")
       postings = postings + new_postings
-    return [self.parse_posting(p['aria-label']) for p in postings]
+    output = []
+    for p in postings:
+      item = self.parse_posting(self.url_root + p['href'])
+      if item != None: output.append(item)
+    return output
 
   ## Access each post based on its job id
-  def parse_posting(self, job_number):
+  def parse_posting(self, url):
+    print(url)
     time_now = str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M'))
-    print(job_number)
-    return ""
+    page = requests.get(url)
+    post_content = BeautifulSoup(page.content, "html.parser")
+    
+    job_title_elem = post_content.find("h1", id="jdPostingTitle")
+    if job_title_elem == None: return
 
-  def extract_content():
-    return ""
+    job_title = job_title_elem.text
+    print(job_title)
+    url = url
+    date_created = time_now
+    applied = ""
+    ignored = ""
+    last_access = time_now
+    last_check = time_now
+    original_ad = post_content.find("div", itemprop="description").text
+    return ReportItem(self.company_name,
+      job_title,
+      url,
+      date_created,
+      applied,
+      ignored,
+      last_access,
+      last_check,
+      original_ad)
+
+
 if __name__ == "__main__":
   print("Generating report...")
   REPORTS_DIR = "reports/"
@@ -283,8 +308,8 @@ if __name__ == "__main__":
       all_jobs[job.url] = job
 
   # Crawl job sites
-  #crawler = GoogleCrawler()
-  #jobs = crawler.crawl()
+  crawler = GoogleCrawler()
+  jobs = crawler.crawl()
 
   #crawler = MicrosoftCrawler()
   #jobs = crawler.crawl()
