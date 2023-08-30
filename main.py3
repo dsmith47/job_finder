@@ -120,6 +120,23 @@ class Crawler():
     self.company_name = company_name
     self.url_root = url_root
     self.job_site_urls = job_site_urls
+  
+  def crawl(self):
+    print("Crawling for {}...".format(self.company_name))
+    new_jobs = []
+    for url in self.job_site_urls:
+      new_jobs = new_jobs + self.access_pages(url)
+    return new_jobs
+
+  def access_pages():
+    return ""
+
+  def parse_posting():
+    return ""
+
+  def extract_content():
+    return ""
+
 
 class GoogleCrawler(Crawler):
   def __init__(self):
@@ -177,13 +194,43 @@ class GoogleCrawler(Crawler):
     
     return [self.parse_posting(p) for p in postings]
   
-  def crawl(self):
-    print("Crawling for {}...".format(self.company_name))
-    new_jobs = []
-    for url in self.job_site_urls:
-      new_jobs = new_jobs + self.access_pages(url)
-    return new_jobs
 
+class MicrosoftCrawler(Crawler):
+  def __init__(self):
+    super().__init__("Microsoft",
+     "https://jobs.careers.microsoft.com/global/en/job/",
+     [ # Remote jobs
+      "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&ws=Up%20to%20100%25%20work%20from%20home&l=en_us&pg=1&pgSz=20&o=Recent&flt=true",
+      # NY Jobs
+      "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&lc=New%20York%2C%20United%20States&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&l=en_us&pg=1&pgSz=20&o=Recent&flt=true"])
+  
+  def access_pages(self, url):
+    print("Accessing {}...".format(url))
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+    new_postings = soup.find_all("div", class_="ms-Stack css-409")
+
+    postings = [] + new_postings
+    i = 1
+    while len(new_postings) > 0:
+      i = i + 1
+      page = requests.get(url+"&page={}".format(i))
+      soup = BeautifulSoup(page.content, "html.parser")
+      new_postings = soup.find_all("div", class_="ms-Stack css-409")
+      postings = postings + new_postings
+    print(postings)  
+    print(soup)
+    return [self.parse_posting(p['aria-label']) for p in postings]
+
+  ## Access each post based on its job id
+  def parse_posting(self, job_number):
+    time_now = str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M'))
+    print(job_number)
+    return ""
+
+  def extract_content():
+    return ""
+  
 if __name__ == "__main__":
   print("Generating report...")
   REPORTS_DIR = "reports/"
@@ -204,7 +251,9 @@ if __name__ == "__main__":
       all_jobs[job.url] = job
 
   # Crawl job sites
-  crawler = GoogleCrawler()
+  #crawler = GoogleCrawler()
+  #jobs = crawler.crawl()
+  crawler = MicrosoftCrawler()
   jobs = crawler.crawl()
 
   # Match jobs to already-known jobs
