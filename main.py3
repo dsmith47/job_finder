@@ -194,7 +194,7 @@ class GoogleCrawler(Crawler):
     
     return [self.parse_posting(p) for p in postings]
   
-
+# TODO: cannot access a parsable version of Microsoft's site this way, need to find an alternative
 class MicrosoftCrawler(Crawler):
   def __init__(self):
     super().__init__("Microsoft",
@@ -209,7 +209,7 @@ class MicrosoftCrawler(Crawler):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
     new_postings = soup.find_all("div", class_="ms-Stack css-409")
-
+    print(soup)
     postings = [] + new_postings
     i = 1
     while len(new_postings) > 0:
@@ -218,8 +218,6 @@ class MicrosoftCrawler(Crawler):
       soup = BeautifulSoup(page.content, "html.parser")
       new_postings = soup.find_all("div", class_="ms-Stack css-409")
       postings = postings + new_postings
-    print(postings)  
-    print(soup)
     return [self.parse_posting(p['aria-label']) for p in postings]
 
   ## Access each post based on its job id
@@ -231,6 +229,39 @@ class MicrosoftCrawler(Crawler):
   def extract_content():
     return ""
   
+
+class AppleCrawler(Crawler):
+  def __init__(self):
+    super().__init__("Apple",
+     "",
+     [ 
+      # NY Jobs
+     "https://jobs.apple.com/en-us/search?search=software%20engineer&sort=newest&location=new-york-state985"])
+  
+  def access_pages(self, url):
+    print("Accessing {}...".format(url))
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+    new_postings = soup.find_all("div", class_="ms-Stack css-409")
+    print(soup)
+    postings = [] + new_postings
+    i = 1
+    while len(new_postings) > 0:
+      i = i + 1
+      page = requests.get(url+"&page={}".format(i))
+      soup = BeautifulSoup(page.content, "html.parser")
+      new_postings = soup.find_all("div", class_="ms-Stack css-409")
+      postings = postings + new_postings
+    return [self.parse_posting(p['aria-label']) for p in postings]
+
+  ## Access each post based on its job id
+  def parse_posting(self, job_number):
+    time_now = str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M'))
+    print(job_number)
+    return ""
+
+  def extract_content():
+    return ""
 if __name__ == "__main__":
   print("Generating report...")
   REPORTS_DIR = "reports/"
@@ -253,7 +284,11 @@ if __name__ == "__main__":
   # Crawl job sites
   #crawler = GoogleCrawler()
   #jobs = crawler.crawl()
-  crawler = MicrosoftCrawler()
+
+  #crawler = MicrosoftCrawler()
+  #jobs = crawler.crawl()
+
+  crawler = AppleCrawler()
   jobs = crawler.crawl()
 
   # Match jobs to already-known jobs
