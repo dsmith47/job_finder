@@ -117,31 +117,85 @@ class ReportItem:
     return output
 
 class Crawler():
-  def __init__(self, company_name=None, url_root=None, job_site_urls=[]):
+  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[]):
+    self.present_time = present_time
     self.company_name = company_name
     self.url_root = url_root
     self.job_site_urls = job_site_urls
-  
+
+  # Starting at provided urls, parse for all available posts
   def crawl(self):
     print("Crawling for {}...".format(self.company_name))
     new_jobs = []
     for url in self.job_site_urls:
       new_jobs = new_jobs + self.access_pages(url)
-    return new_jobs
+    return [j for j in new_jobs if j is not None]
 
-  def access_pages():
-    return ""
+  # Load pages for individual job advertisements, parse them into jobs
+  def access_pages(self, job_url):
+    page = requests.get(url)
+    post_content = BeautifulSoup(page.content, "html.parser")
+    
+    postings = [] + new_postings
+    i = 1
+    while len(new_postings) > 0:
+      i = i + 1
+      page = requests.get(url+"&page={}".format(i))
+      soup = BeautifulSoup(page.content, "html.parser")
+      new_postings = self.find_list_items(soup)
+      postings = postings + new_postings
 
-  def parse_posting():
-    return ""
+    items = []
+    for p in postings:
+      if p is None: continue
+      items.append(item_from_post(p))
+    return items
 
-  def extract_content():
-    return ""
+  # TODO: must be implemented by Child    
+  def find_list_items(self, bs_obj):
+    return None
+
+  def item_from_post(self, job_url):
+    page = requests.get(url)
+    post_content = BeautifulSoup(page.content, "html.parser")
+
+    job_title = self.text_from_post(soup) 
+    if job_title is None: return
+
+    url = job_url 
+    date_created = self.present_time
+    applied = self.present_time
+    ignored = self.present_time
+    last_access = time_now
+    last_check = time_now
+
+    original_ad = self.text_from_post(soup) 
+    if original_ad is None: return
+
+    return ReportItem(self.company_name,
+      job_title,
+      url,
+      date_created,
+      applied,
+      ignored,
+      last_access,
+      last_check,
+      original_ad)
+
+  # TODO: must be implemented by Child
+  def title_from_post(self, bs_obj):
+    return None
+
+  # TODO: must be implemented by Child
+  def text_from_post(self, bs_obj):
+    return None
+
 
 
 class GoogleCrawler(Crawler):
   def __init__(self):
-    super().__init__("Google",
+    super().__init__(present_time,
+     "Google",
      "https://www.google.com/about/careers/applications/",
      [ # Remote jobs
       "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&has_remote=true&target_level=EARLY&target_level=MID",
@@ -197,8 +251,9 @@ class GoogleCrawler(Crawler):
   
 # TODO: cannot access a parsable version of Microsoft's site this way, need to find an alternative
 class MicrosoftCrawler(Crawler):
-  def __init__(self):
-    super().__init__("Microsoft",
+  def __init__(self, present_time):
+    super().__init__(present_time,
+     "Microsoft",
      "https://jobs.careers.microsoft.com/global/en/job/",
      [ # Remote jobs
       "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&ws=Up%20to%20100%25%20work%20from%20home&l=en_us&pg=1&pgSz=20&o=Recent&flt=true",
@@ -232,8 +287,9 @@ class MicrosoftCrawler(Crawler):
   
 
 class AppleCrawler(Crawler):
-  def __init__(self):
-    super().__init__("Apple",
+  def __init__(self, present_time):
+    super().__init__(present_time,
+     "Apple",
      "https://jobs.apple.com",
      [ 
       # NY Jobs
@@ -308,14 +364,14 @@ if __name__ == "__main__":
       all_jobs[job.url] = job
 
   # Crawl job sites
-  crawler = GoogleCrawler()
-  jobs = crawler.crawl()
-
-  #crawler = MicrosoftCrawler()
+  #crawler = GoogleCrawler(now_datestring)
   #jobs = crawler.crawl()
 
-  crawler = AppleCrawler()
-  jobs = crawler.crawl()
+  #crawler = MicrosoftCrawler(now_datestring)
+  #jobs = crawler.crawl()
+
+  #crawler = AppleCrawler(now_datestring)
+  #jobs = crawler.crawl()
 
   # Match jobs to already-known jobs
   for job in jobs:
