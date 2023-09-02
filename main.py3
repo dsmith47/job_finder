@@ -135,6 +135,7 @@ class Crawler():
   def access_pages(self, url):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
+    print(soup)
     
     new_postings = self.find_list_items(soup)
     postings = new_postings
@@ -156,7 +157,7 @@ class Crawler():
     page = requests.get(job_url)
     post_content = BeautifulSoup(page.content, "html.parser")
 
-    job_title = self.text_from_post(post_content) 
+    job_title = self.title_from_post(post_content) 
     if job_title is None: return
 
     url = job_url 
@@ -270,6 +271,35 @@ class AppleCrawler(Crawler):
     if text_elem is None: return
     return text_elem.text
 
+# TODO: This went from working to not working while debugging, is it a possible session issue? Need to try again later
+class NetflixCrawler(Crawler):
+  def __init__(self, present_time):
+    super().__init__(present_time,
+     "Netflix",
+     "https://jobs.netflix.com",
+     [ # NY+Remote Jobs
+     "https://jobs.netflix.com/search?location=New%20York%2C%20New%20York~Remote%2C%20United%20States"])
+  
+  def find_list_items(self, bs_obj):
+    new_postings = bs_obj.find_all("a", class_="css-2y5mtm essqqm81")
+    output_urls = []
+    for p in new_postings:
+      if 'href' not in p.attrs: continue
+      print(p['href'])
+      if p['href'][:7] != "/jobs/": continue
+      output_urls.append(self.url_root + p['href'])
+    print(output_urls)
+    return output_urls
+
+  def title_from_post(self, bs_obj):
+    job_title_elem = bs_obj.find("h1", class_="css-1o1349e e1spn5rx1")
+    if job_title_elem is None: return
+    return job_title_elem.text
+
+  def text_from_post(self, bs_obj):
+    text_elem = bs_obj.find("div", class_="css-9x8k7t e1spn5rx7")
+    if text_elem is None: return
+    return text_elem.text
 
 if __name__ == "__main__":
   print("Generating report...")
@@ -292,12 +322,17 @@ if __name__ == "__main__":
 
   jobs = []
   # Crawl job sites
-  crawler = GoogleCrawler(now_datestring)
-  jobs = jobs + crawler.crawl()
+  #crawler = GoogleCrawler(now_datestring)
+  #jobs = jobs + crawler.crawl()
 
+  # TODO: implement this
   #crawler = MicrosoftCrawler(now_datestring)
 
-  crawler = AppleCrawler(now_datestring)
+  #crawler = AppleCrawler(now_datestring)
+  #jobs = jobs + crawler.crawl()
+
+  # TODO: implement this
+  crawler = NetflixCrawler(now_datestring)
   jobs = jobs + crawler.crawl()
 
   # Match jobs to already-known jobs
