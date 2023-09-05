@@ -7,6 +7,16 @@ import datetime
 import os
 import requests
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+
+# Initialize WebDriver
+options = Options()
+options.add_argument("--headless")
+options.add_argument("--window-size=1920,1200")
+options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36")
+driver = webdriver.Chrome(options=options)
 
 # A Single job, with descriptive state and some history, writes into a row
 # TODO: can't support the newlines/commas that appear in job text body,
@@ -240,9 +250,23 @@ class MicrosoftCrawler(Crawler):
       "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&ws=Up%20to%20100%25%20work%20from%20home&l=en_us&pg=1&pgSz=20&o=Recent&flt=true",
       # NY Jobs
       "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&lc=New%20York%2C%20United%20States&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&l=en_us&pg=1&pgSz=20&o=Recent&flt=true"])
-  
+
+  # Attempting to access page with Selenium
+  """  
   def crawl(self):
+    driver.get(self.job_site_urls[0])
+    print(driver.page_source.encode("utf-8"))
+
+    links = driver.find_element(By.CLASS_NAME, "ms-Stack css-409")
+    print(links[0].get_attribute['aria-label'])
     return 
+  """
+
+  def crawl(self):
+    page = requests.get("https://jobs.careers.microsoft.com/global/en/job/1556962/Software-Engineer-II")
+    soup = BeautifulSoup(page.content, "html.parser")
+    print(soup)
+    return
 
 class AppleCrawler(Crawler):
   def __init__(self, present_time):
@@ -353,7 +377,8 @@ if __name__ == "__main__":
   #jobs = jobs + crawler.crawl()
 
   # TODO: implement this
-  #crawler = MicrosoftCrawler(now_datestring)
+  crawler = MicrosoftCrawler(now_datestring)
+  jobs = jobs + crawler.crawl()
 
   #crawler = AppleCrawler(now_datestring)
   #jobs = jobs + crawler.crawl()
@@ -363,8 +388,8 @@ if __name__ == "__main__":
   # jobs = jobs + crawler.crawl()
 
   # TODO: implement this
-  crawler = AmazonCrawler(now_datestring)
-  jobs = jobs + crawler.crawl()
+  # crawler = AmazonCrawler(now_datestring)
+  # jobs = jobs + crawler.crawl()
 
   # Match jobs to already-known jobs
   for job in jobs:
