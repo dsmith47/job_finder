@@ -135,7 +135,6 @@ class Crawler():
   def access_pages(self, url):
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
-    print(soup)
     
     new_postings = self.find_list_items(soup)
     postings = new_postings
@@ -271,7 +270,7 @@ class AppleCrawler(Crawler):
     if text_elem is None: return
     return text_elem.text
 
-# TODO: This went from working to not working while debugging, is it a possible session issue? Need to try again later
+# TODO: doesn't crawl in bs4, implement a working crawl scheme 
 class NetflixCrawler(Crawler):
   def __init__(self, present_time):
     super().__init__(present_time,
@@ -301,6 +300,34 @@ class NetflixCrawler(Crawler):
     if text_elem is None: return
     return text_elem.text
 
+# TODO: Doesn't render the page when loaded 
+class AmazonCrawler(Crawler):
+  def __init__(self, present_time):
+    super().__init__(present_time,
+     "Amazon",
+     "https://www.amazon.jobs",
+     [ # Remote Jobs
+     "https://www.amazon.jobs/en/locations/virtual-locations?offset=0&result_limit=10&sort=recent&country%5B%5D=USA&distanceType=Mi&radius=24km&latitude=&longitude=&loc_group_id=&loc_query=&base_query=&city=&country=&region=&county=&query_options=&",
+       # NY Jobs
+     "https://www.amazon.jobs/en/search?offset=0&result_limit=10&sort=recent&city%5B%5D=New%20York&city%5B%5D=Staten%20Island&distanceType=Mi&radius=24km&latitude=40.71454&longitude=-74.00712&loc_group_id=&loc_query=New%20York%2C%20New%20York%2C%20United%20States&base_query=engineer&city=New%20York&country=USA&region=New%20York&county=New%20York&query_options=&"])
+  
+  def find_list_items(self, bs_obj):
+    new_postings = bs_obj.find_all("a", class_="job-link")
+    output_urls = []
+    for p in new_postings:
+      output_urls.append(self.url_root + p['href'])
+    print(output_urls)
+    return output_urls
+
+  def title_from_post(self, bs_obj):
+    job_title_elem = bs_obj.find("h1", class_="title")
+    if job_title_elem is None: return
+    return job_title_elem.text
+
+  def text_from_post(self, bs_obj):
+    text_elem = bs_obj.find("div", class_="content")
+    if text_elem is None: return
+    return text_elem.text
 if __name__ == "__main__":
   print("Generating report...")
   REPORTS_DIR = "reports/"
@@ -332,7 +359,11 @@ if __name__ == "__main__":
   #jobs = jobs + crawler.crawl()
 
   # TODO: implement this
-  crawler = NetflixCrawler(now_datestring)
+  # crawler = NetflixCrawler(now_datestring)
+  # jobs = jobs + crawler.crawl()
+
+  # TODO: implement this
+  crawler = AmazonCrawler(now_datestring)
   jobs = jobs + crawler.crawl()
 
   # Match jobs to already-known jobs
