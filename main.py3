@@ -7,16 +7,7 @@ import datetime
 import os
 import requests
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
 
-# Initialize WebDriver
-options = Options()
-options.add_argument("--headless")
-options.add_argument("--window-size=1920,1200")
-options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36")
-driver = webdriver.Chrome(options=options)
 
 # A Single job, with descriptive state and some history, writes into a row
 # TODO: can't support the newlines/commas that appear in job text body,
@@ -373,15 +364,15 @@ if __name__ == "__main__":
 
   jobs = []
   # Crawl job sites
-  #crawler = GoogleCrawler(now_datestring)
-  #jobs = jobs + crawler.crawl()
-
-  # TODO: implement this
-  crawler = MicrosoftCrawler(now_datestring)
+  crawler = GoogleCrawler(now_datestring)
   jobs = jobs + crawler.crawl()
 
-  #crawler = AppleCrawler(now_datestring)
+  # TODO: implement this
+  #crawler = MicrosoftCrawler(now_datestring)
   #jobs = jobs + crawler.crawl()
+
+  crawler = AppleCrawler(now_datestring)
+  jobs = jobs + crawler.crawl()
 
   # TODO: implement this
   # crawler = NetflixCrawler(now_datestring)
