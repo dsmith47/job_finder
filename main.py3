@@ -26,8 +26,6 @@ driver.implicitly_wait(20)
 
 
 # A Single job, with descriptive state and some history, writes into a row
-# TODO: can't support the newlines/commas that appear in job text body,
-#  need to implement support for this to compare ads over time
 class ReportItem:
   ROW_COMPANY_HEADER = "Company"
   ROW_JOB_TITLE_HEADER = "Job Title"
@@ -196,16 +194,18 @@ class Crawler():
       last_check,
       original_ad)
 
-  # TODO: must be implemented by Child    
-  # Must return a list of urls to access
+  # Must be implemented by Child    
+  # Must return a list of urls for individual job posts to access
   def find_list_items(self, bs_obj):
     return None
 
-  # TODO: must be implemented by Child
+  # Must be implemented by Child
+  # Must return a string to use as the job title
   def title_from_post(self, bs_obj):
     return None
 
-  # TODO: must be implemented by Child
+  # Must be implemented by Child
+  # Must return a list of 
   def text_from_post(self, bs_obj):
     return None
 
@@ -247,7 +247,6 @@ class GoogleCrawler(Crawler):
     return output
   
 
-# TODO: cannot access a parsable version of Microsoft's site this way, need to find an alternative
 class MicrosoftCrawler(Crawler):
   def __init__(self, present_time):
     super().__init__(present_time,
@@ -392,6 +391,7 @@ class AmazonCrawler(Crawler):
     text_elem = bs_obj.find("div", class_="content")
     if text_elem is None: return
     return text_elem.text
+
 if __name__ == "__main__":
   print("Generating report...")
   REPORTS_DIR = "reports/"
@@ -412,16 +412,14 @@ if __name__ == "__main__":
       all_jobs[job.url] = job
 
   jobs = []
-  # Crawl job sites
-  # crawler = GoogleCrawler(now_datestring)
-  # jobs = jobs + crawler.crawl()
+  crawler = GoogleCrawler(now_datestring)
+  jobs = jobs + crawler.crawl()
 
-  # TODO: implement this
   crawler = MicrosoftCrawler(now_datestring)
   jobs = jobs + crawler.crawl()
 
-  # crawler = AppleCrawler(now_datestring)
-  # jobs = jobs + crawler.crawl()
+  crawler = AppleCrawler(now_datestring)
+  jobs = jobs + crawler.crawl()
 
   # TODO: implement this
   # crawler = NetflixCrawler(now_datestring)
@@ -430,6 +428,8 @@ if __name__ == "__main__":
   # TODO: implement this
   # crawler = AmazonCrawler(now_datestring)
   # jobs = jobs + crawler.crawl()
+
+  # TODO: MetaCrawler
 
   # Match jobs to already-known jobs
   for job in jobs:
