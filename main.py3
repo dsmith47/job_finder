@@ -394,7 +394,7 @@ class AmazonCrawler(Crawler):
 
 if __name__ == "__main__":
   print("Generating report...")
-  REPORTS_DIR = "reports/"
+  REPORTS_DIR = "output/"
   FILE_NAME = REPORTS_DIR + "job-report_"
   now = datetime.datetime.now()
   now_datestring = now.strftime('%Y-%m-%d %H:%M')
