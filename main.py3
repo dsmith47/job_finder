@@ -6,7 +6,23 @@ import csv
 import datetime
 import os
 import requests
+import time
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.os_manager import ChromeType
+
+options = webdriver.ChromeOptions()
+chrome_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+chrome_service = Service(chrome_path)
+
+driver = Chrome(options=options)
+driver.implicitly_wait(20)
 
 
 # A Single job, with descriptive state and some history, writes into a row
@@ -236,28 +252,61 @@ class MicrosoftCrawler(Crawler):
   def __init__(self, present_time):
     super().__init__(present_time,
      "Microsoft",
-     "https://jobs.careers.microsoft.com/global/en/job/",
+     "https://jobs.careers.microsoft.com/global/en/job/{}",
      [ # Remote jobs
-      "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&ws=Up%20to%20100%25%20work%20from%20home&l=en_us&pg=1&pgSz=20&o=Recent&flt=true",
+      "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&ws=Up%20to%20100%25%20work%20from%20home&l=en_us&pg={}&pgSz=20&o=Recent&flt=true",
       # NY Jobs
-      "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&lc=New%20York%2C%20United%20States&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&l=en_us&pg=1&pgSz=20&o=Recent&flt=true"])
+      "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&lc=New%20York%2C%20United%20States&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&l=en_us&pg={}&pgSz=20&o=Recent&flt=true"])
 
   # Attempting to access page with Selenium
-  """  
   def crawl(self):
-    driver.get(self.job_site_urls[0])
-    print(driver.page_source.encode("utf-8"))
+    print("Crawling for {}...".format(self.company_name))
+    new_jobs = []
+    for url in self.job_site_urls:
+      new_jobs = new_jobs + self.access_pages(url)
+    return [j for j in new_jobs if j is not None]
 
-    links = driver.find_element(By.CLASS_NAME, "ms-Stack css-409")
-    print(links[0].get_attribute['aria-label'])
-    return 
-  """
+  def access_pages(self, url):
+    i = 1
+    new_postings = self.find_list_items(url.format(i))
+    postings = new_postings
+    while len(new_postings) > 0:
+      i = i + 1
+      new_postings = self.find_list_items(url.format(i))
+      postings = postings + new_postings
+    return postings
 
-  def crawl(self):
-    page = requests.get("https://jobs.careers.microsoft.com/global/en/job/1556962/Software-Engineer-II")
-    soup = BeautifulSoup(page.content, "html.parser")
-    print(soup)
-    return
+  def find_list_items(self, url):
+    driver.get(url)
+    # Need to load the actual page
+    time.sleep(30)
+    
+    job_posts = driver.find_elements(By.CLASS_NAME, "ms-List-cell")
+    report_items = []
+    for l in job_posts:
+      #job_number = l.find_element(By.CLASS_NAME, "css-404").get_attribute("aria-label")
+      job_number = l.find_element(By.XPATH, "*").get_attribute("aria-label").split()[-1]
+      job_url = self.url_root.format(job_number)
+      job_title = l.find_element(By.TAG_NAME, "h2").text 
+
+      date_created = self.present_time
+      applied = None
+      ignored = None
+      last_access = self.present_time
+      last_check = self.present_time
+      original_ad = "" 
+
+      report_items.append(ReportItem(self.company_name,
+        job_title,
+        job_url,
+        date_created,
+        applied,
+        ignored,
+        last_access,
+        last_check,
+        original_ad))
+    return report_items
+
 
 class AppleCrawler(Crawler):
   def __init__(self, present_time):
@@ -364,15 +413,15 @@ if __name__ == "__main__":
 
   jobs = []
   # Crawl job sites
-  crawler = GoogleCrawler(now_datestring)
-  jobs = jobs + crawler.crawl()
+  # crawler = GoogleCrawler(now_datestring)
+  # jobs = jobs + crawler.crawl()
 
   # TODO: implement this
-  #crawler = MicrosoftCrawler(now_datestring)
-  #jobs = jobs + crawler.crawl()
-
-  crawler = AppleCrawler(now_datestring)
+  crawler = MicrosoftCrawler(now_datestring)
   jobs = jobs + crawler.crawl()
+
+  # crawler = AppleCrawler(now_datestring)
+  # jobs = jobs + crawler.crawl()
 
   # TODO: implement this
   # crawler = NetflixCrawler(now_datestring)
@@ -384,11 +433,12 @@ if __name__ == "__main__":
 
   # Match jobs to already-known jobs
   for job in jobs:
+    print(job)
     if job.url not in all_jobs:
       all_jobs[job.url] = job
     else:
       all_jobs[job.url].date_created = min(all_jobs[job.url].date_created, job.date_created)
-      if len(all_jobs[job.url].date_applied) < 1:
+      if all_jobs[job.url].date_applied and len(all_jobs[job.url].date_applied) < 1:
         all_jobs[job.url].date_applied = job.date_applied
       all_jobs[job.url].date_accessed = max(all_jobs[job.url].date_created, job.date_created)
       all_jobs[job.url].date_checked = max(all_jobs[job.url].date_created, job.date_created)
