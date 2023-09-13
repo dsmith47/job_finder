@@ -15,7 +15,7 @@ class MicrosoftCrawler(SeleniumCrawler):
 
   def extract_job_list_items(self, url):
     # Access the page to parse
-    finished_driver = query_page(url)
+    finished_driver = self.query_page(url)
 
     # TODO: makes this lookup more element-agnostic
     job_posts = finished_driver.find_elements(By.CLASS_NAME, "ms-List-cell")

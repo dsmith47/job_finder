@@ -2,6 +2,7 @@
 #
 # Tool to accss job websites, generate a report of their current states, and
 # compare that report to previous reports.
+import argparse
 import csv
 import datetime
 import os
@@ -14,6 +15,12 @@ from jc_lib.companies.Microsoft import MicrosoftCrawler
 from jc_lib.reporting import ReportItem
 
 if __name__ == "__main__":
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--debug', action=argparse.BooleanOptionalAction)
+  parser.set_defaults(debug=True)
+
+  args = parser.parse_args()
+
   print("Starting script...")
   REPORTS_DIR = "output/"
   FILE_NAME = REPORTS_DIR + "job-report_"
@@ -58,11 +65,14 @@ if __name__ == "__main__":
       if all_jobs[job.url].original_ad != job.original_ad or (len(all_jobs[job.url].updated_ads)>0 and all_jobs[job.url].updated_ads[-1] != job.original_ad):
         all_jobs[job.url].updated_ads.append("["+job.date_created+"]\n"+job.original_ad)
   ## Write output
-  outfile = open(FILE_NAME + now_filepath + ".csv", "w", newline='')
-  output_writer = csv.writer(outfile)
-  output_writer.writerow(ReportItem.header())
   for job in all_jobs.values():
     print(job)
-    output_writer.writerow(job.as_array())
-  outfile.close()
+
+  if not args.debug: 
+    outfile = open(FILE_NAME + now_filepath + ".csv", "w", newline='')
+    output_writer = csv.writer(outfile)
+    output_writer.writerow(ReportItem.header())
+    for job in all_jobs.values():
+      output_writer.writerow(job.as_array())
+    outfile.close()
   print("Script complete.")
