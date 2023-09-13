@@ -14,14 +14,11 @@ class MicrosoftCrawler(SeleniumCrawler):
       "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&lc=New%20York%2C%20United%20States&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&l=en_us&pg={}&pgSz=20&o=Recent&flt=true"])
 
   def extract_job_list_items(self, url):
-    # TODO: can probably move to a query instance
-    MicrosoftCrawler.driver.get(url)
-    # Need to load the actual page
-    # TODO: can optimize wait times on loads
-    time.sleep(30)
+    # Access the page to parse
+    finished_driver = query_page(url)
 
     # TODO: makes this lookup more element-agnostic
-    job_posts = MicrosoftCrawler.driver.find_elements(By.CLASS_NAME, "ms-List-cell")
+    job_posts = finished_driver.find_elements(By.CLASS_NAME, "ms-List-cell")
     report_items = []
     for l in job_posts:
       #job_number = l.find_element(By.CLASS_NAME, "css-404").get_attribute("aria-label")
