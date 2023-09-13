@@ -6,33 +6,26 @@ class GoogleCrawler(SoupCrawler):
      "Google",
      "https://www.google.com/about/careers/applications/",
      [ # Remote jobs
-      "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&has_remote=true&target_level=EARLY&target_level=MID",
+      "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&has_remote=true&target_level=EARLY&target_level=MID&page={}",
       # NY Jobs
-      "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA"])
- 
-  def find_list_items(self, bs_obj):
-    new_postings = bs_obj.find_all("div", class_="sMn82b")
-    output_urls = []
-    for p in new_postings:
-      link_elem = p.find("a", class_="WpHeLc")
-      if link_elem is None: continue
+      "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA&page={}"])
 
-      output_urls.append(self.url_root + link_elem['href'])
-
-    return output_urls
-
-  def title_from_post(self, bs_obj):
-    job_title_elem = bs_obj.find("h2", class_="p1N2lc")
-    if job_title_elem is None: return
-    return job_title_elem.text
-
-  def text_from_post(self, bs_obj):
-    text_elems = [bs_obj.find("div", class_="KwJkGe"),\
-                  bs_obj.find("div", class_="aG5W3")]
-    output = ""
-    for e in text_elems:
-      if e is None: continue
-      output = output +  e.text + "\n\n\n"
+  def extract_job_list_items(self, bs_obj):
+    output = []
+    link_items = bs_obj.find_all(href=True)
+    for a in link_items:
+      job_url = None
+      if a['href'].startswith('jobs/results/'):
+          job_url = self.url_root + a['href']
+      if not job_url: continue
+      output.append(self.make_report_item(job_url=job_url))
     return output
-  
 
+  def post_process(self, report_item):
+    bs_obj = self.query_page(report_item.url)
+    text_nodes = [i.get_text() for i in bs_obj.findAll(text=True)]
+    i = 0
+    while len(text_nodes[i].strip()) < 1: i = i + 1
+    report_item.title = text_nodes[i]
+    report_item.original_ad = ''.join(text_nodes[i+1:])
+    return report_item

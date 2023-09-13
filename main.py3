@@ -91,67 +91,8 @@ class MicrosoftCrawler(Crawler):
     return report_items
 
 
-# TODO: doesn't crawl in bs4, implement a working crawl scheme 
-class NetflixCrawler(Crawler):
-  def __init__(self, present_time):
-    super().__init__(present_time,
-     "Netflix",
-     "https://jobs.netflix.com",
-     [ # NY+Remote Jobs
-     "https://jobs.netflix.com/search?location=New%20York%2C%20New%20York~Remote%2C%20United%20States"])
-  
-  def find_list_items(self, bs_obj):
-    new_postings = bs_obj.find_all("a", class_="css-2y5mtm essqqm81")
-    output_urls = []
-    for p in new_postings:
-      if 'href' not in p.attrs: continue
-      print(p['href'])
-      if p['href'][:7] != "/jobs/": continue
-      output_urls.append(self.url_root + p['href'])
-    print(output_urls)
-    return output_urls
-
-  def title_from_post(self, bs_obj):
-    job_title_elem = bs_obj.find("h1", class_="css-1o1349e e1spn5rx1")
-    if job_title_elem is None: return
-    return job_title_elem.text
-
-  def text_from_post(self, bs_obj):
-    text_elem = bs_obj.find("div", class_="css-9x8k7t e1spn5rx7")
-    if text_elem is None: return
-    return text_elem.text
-
-# TODO: Doesn't render the page when loaded 
-class AmazonCrawler(Crawler):
-  def __init__(self, present_time):
-    super().__init__(present_time,
-     "Amazon",
-     "https://www.amazon.jobs",
-     [ # Remote Jobs
-     "https://www.amazon.jobs/en/locations/virtual-locations?offset=0&result_limit=10&sort=recent&country%5B%5D=USA&distanceType=Mi&radius=24km&latitude=&longitude=&loc_group_id=&loc_query=&base_query=&city=&country=&region=&county=&query_options=&",
-       # NY Jobs
-     "https://www.amazon.jobs/en/search?offset=0&result_limit=10&sort=recent&city%5B%5D=New%20York&city%5B%5D=Staten%20Island&distanceType=Mi&radius=24km&latitude=40.71454&longitude=-74.00712&loc_group_id=&loc_query=New%20York%2C%20New%20York%2C%20United%20States&base_query=engineer&city=New%20York&country=USA&region=New%20York&county=New%20York&query_options=&"])
-  
-  def find_list_items(self, bs_obj):
-    new_postings = bs_obj.find_all("a", class_="job-link")
-    output_urls = []
-    for p in new_postings:
-      output_urls.append(self.url_root + p['href'])
-    print(output_urls)
-    return output_urls
-
-  def title_from_post(self, bs_obj):
-    job_title_elem = bs_obj.find("h1", class_="title")
-    if job_title_elem is None: return
-    return job_title_elem.text
-
-  def text_from_post(self, bs_obj):
-    text_elem = bs_obj.find("div", class_="content")
-    if text_elem is None: return
-    return text_elem.text
-
 if __name__ == "__main__":
-  print("Generating report...")
+  print("Starting script...")
   REPORTS_DIR = "output/"
   FILE_NAME = REPORTS_DIR + "job-report_"
   now = datetime.datetime.now()
@@ -169,6 +110,7 @@ if __name__ == "__main__":
       job = ReportItem.from_row(header, row)
       all_jobs[job.url] = job
 
+  # Crawl new jobs
   jobs = []
   crawler = GoogleCrawler(now_datestring)
   jobs = jobs + crawler.crawl()
@@ -179,19 +121,10 @@ if __name__ == "__main__":
   crawler = AppleCrawler(now_datestring)
   jobs = jobs + crawler.crawl()
 
-  # TODO: implement this
-  # crawler = NetflixCrawler(now_datestring)
-  # jobs = jobs + crawler.crawl()
-
-  # TODO: implement this
-  # crawler = AmazonCrawler(now_datestring)
-  # jobs = jobs + crawler.crawl()
-
-  # TODO: MetaCrawler
-
-  # Match jobs to already-known jobs
+  # Output jobs reports
+  print("Generating report...")
+  ## Match jobs to already-known jobs
   for job in jobs:
-    print(job)
     if job.url not in all_jobs:
       all_jobs[job.url] = job
     else:
@@ -202,12 +135,12 @@ if __name__ == "__main__":
       all_jobs[job.url].date_checked = max(all_jobs[job.url].date_created, job.date_created)
       if all_jobs[job.url].original_ad != job.original_ad or (len(all_jobs[job.url].updated_ads)>0 and all_jobs[job.url].updated_ads[-1] != job.original_ad):
         all_jobs[job.url].updated_ads.append("["+job.date_created+"]\n"+job.original_ad)
-
-  # Write output
+  ## Write output
   outfile = open(FILE_NAME + now_filepath + ".csv", "w", newline='')
   output_writer = csv.writer(outfile)
   output_writer.writerow(ReportItem.header())
   for job in all_jobs.values():
+    print(job)
     output_writer.writerow(job.as_array())
   outfile.close()
   print("Script complete.")

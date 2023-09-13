@@ -6,23 +6,25 @@ class AppleCrawler(SoupCrawler):
      "Apple",
      "https://jobs.apple.com",
      [ # NY Jobs
-     "https://jobs.apple.com/en-us/search?search=software%20engineer&sort=newest&location=new-york-state985"])
-  
-  def find_list_items(self, bs_obj):
-    new_postings = bs_obj.find_all("a", class_="table--advanced-search__title")
-    output_urls = []
-    for p in new_postings:
-      output_urls.append(self.url_root + p['href'])
+     "https://jobs.apple.com/en-us/search?search=software%20engineer&sort=newest&location=new-york-state985&page={}"])
 
-    return output_urls
+  def extract_job_list_items(self, bs_obj):
+    output = []
+    link_items = bs_obj.find_all(href=True)
+    for a in link_items:
+      job_url = None
+      if a['href'].startswith('/en-us/details/'):
+          job_url = self.url_root + a['href']
+      if not job_url: continue
+      output.append(self.make_report_item(job_url=job_url))
+    return output
 
-  def title_from_post(self, bs_obj):
-    job_title_elem = bs_obj.find("h1", id="jdPostingTitle")
-    if job_title_elem is None: return
-    return job_title_elem.text
-
-  def text_from_post(self, bs_obj):
-    text_elem = bs_obj.find("div", itemprop="description")
-    if text_elem is None: return
-    return text_elem.text
+  def post_process(self, report_item):
+    bs_obj = self.query_page(report_item.url)
+    text_nodes = [i.get_text() for i in bs_obj.findAll(text=True)]
+    i = 0
+    while len(text_nodes[i].strip()) < 1: i = i + 1
+    report_item.job_title = text_nodes[i]
+    report_item.original_ad = ''.join(text_nodes[i+1:])
+    return report_item
 

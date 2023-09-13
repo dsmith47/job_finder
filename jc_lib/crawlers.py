@@ -13,83 +13,67 @@ class Crawler():
     self.url_root = url_root
     self.job_site_urls = job_site_urls
 
-  def crawl(self):
-    raise Exception("Unimplemented Crawl: child class must implement crawl() method")
-
-
-class SoupCrawler(Crawler):
-  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[]):
-    super().__init__(present_time, company_name, url_root, job_site_urls)
-
   # Starting at provided urls, parse for all available posts
   def crawl(self):
     print("Crawling for {}...".format(self.company_name))
     new_jobs = []
     for url in self.job_site_urls:
-      new_jobs = new_jobs + self.access_pages(url)
-    return [j for j in new_jobs if j is not None]
+      new_jobs = new_jobs + self.crawl_page(url)
+    return [self.post_process(j) for j in new_jobs if j is not None]
 
-  # load pages for individual job advertisements, parse them into jobs
-  def access_pages(self, url):
-    print("Scraping {}".format(url))
-    page = requests.get(url)
-    soup = BeautifulSoup(page.content, "html.parser")
+  # REQUIRED access urls associated with company to extract current job posts
+  def crawl_page(self, url):
+    raise Exception("Unimplemented crawl_page: child class must implement crawl_page(url) method")
 
-    new_postings = self.find_list_items(soup)
-    postings = new_postings
-    i = 1
-    while len(new_postings) > 0:
-      i = i + 1
-      print("Scraping {}".format(url+"&page={}".format(i)))
-      page = requests.get(url+"&page={}".format(i))
-      soup = BeautifulSoup(page.content, "html.parser")
-      new_postings = self.find_list_items(soup)
-      postings = postings + new_postings
+  # REQUIRED query a single page, return a tree object that parser can interact with
+  def query_page(self, url):
+    raise Exception("Unimplemented query_page: child class must implement query_page(url) method")
 
-    items = []
-    for p in postings:
-      if p is None: continue
-      items.append(self.item_from_post(p))
-    return items
+  # OPTIONAL after each item is collected, runs optional logic on it before returning (adds detail to description text, etc)
+  def post_process(self, item):
+    return item
 
-  def item_from_post(self, job_url):
-    page = requests.get(job_url)
-    post_content = BeautifulSoup(page.content, "html.parser")
-
-    job_title = self.title_from_post(post_content)
-    if job_title is None: return
-
-    url = job_url
+  def make_report_item(self, job_title='', job_text='', job_url=''):
     date_created = self.present_time
     applied = None
     ignored = None
     last_access = self.present_time
     last_check = self.present_time
 
-    original_ad = self.text_from_post(post_content)
-    if original_ad is None: return
-
     return ReportItem(self.company_name,
       job_title,
-      url,
+      job_url,
       date_created,
       applied,
       ignored,
       last_access,
       last_check,
-      original_ad)
+      job_text)
 
-  # Must be implemented by Child    
-  # Must return a list of urls for individual job posts to access
-  def find_list_items(self, bs_obj):
-    return None
 
-  # Must be implemented by Child
-  # Must return a string to use as the job title
-  def title_from_post(self, bs_obj):
-    return None
+class SoupCrawler(Crawler):
+  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[]):
+    super().__init__(present_time, company_name, url_root, job_site_urls)
 
-  # Must be implemented by Child
-  # Must return a list of 
-  def text_from_post(self, bs_obj):
-    return None
+  def crawl_page(self, url):
+    i = 1
+    print("Scraping {}".format(url.format(i)))
+    soup = self.query_page(url.format(i))
+    new_postings = self.extract_job_list_items(soup)
+    all_postings = new_postings
+    while len(new_postings) > 0:
+      i = i + 1
+      print("Scraping {}".format(url.format(i)))
+      soup = self.query_page(url.format(i))
+      new_postings = self.extract_job_list_items(soup)
+      all_postings = all_postings + new_postings
+    return all_postings
+
+  def query_page(self, url):
+    page = requests.get(url)
+    return BeautifulSoup(page.content, "html.parser")
+
+  # REQUIRED implemented by inheriting class, template report items from provided object
+  def extract_job_list_items(self, bs_obj):
+    raise Exception("Unimplemented extract_job_list_items: child class must implement extract_job_list_items(bs_obj) method")
+
