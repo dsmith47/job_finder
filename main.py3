@@ -18,143 +18,18 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.core.os_manager import ChromeType
 
 from jc_lib.reporting import ReportItem
+from jc_lib.crawlers import Crawler,SoupCrawler
 
+from jc_lib.companies.Google import GoogleCrawler
+from jc_lib.companies.Apple import AppleCrawler
+
+# Configure Selenium
 options = webdriver.ChromeOptions()
 chrome_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
 chrome_service = Service(chrome_path)
 
 driver = Chrome(options=options)
 driver.implicitly_wait(20)
-
-
-class Crawler():
-  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[]):
-    self.present_time = present_time
-    self.company_name = company_name
-    self.url_root = url_root
-    self.job_site_urls = job_site_urls
-
-  def crawl(self):
-    raise Exception("Unimplemented Crawl: child class must implement crawl() method")
-
-
-class SoupCrawler(Crawler):
-  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[]):
-    self.present_time = present_time
-    self.company_name = company_name
-    self.url_root = url_root
-    self.job_site_urls = job_site_urls
-
-  # Starting at provided urls, parse for all available posts
-  def crawl(self):
-    print("Crawling for {}...".format(self.company_name))
-    new_jobs = []
-    for url in self.job_site_urls:
-      new_jobs = new_jobs + self.access_pages(url)
-    return [j for j in new_jobs if j is not None]
-
-  # load pages for individual job advertisements, parse them into jobs
-  def access_pages(self, url):
-    print("Scraping {}".format(url))
-    page = requests.get(url)
-    soup = BeautifulSoup(page.content, "html.parser")
-    
-    new_postings = self.find_list_items(soup)
-    postings = new_postings
-    i = 1
-    while len(new_postings) > 0:
-      i = i + 1
-      print("Scraping {}".format(url+"&page={}".format(i)))
-      page = requests.get(url+"&page={}".format(i))
-      soup = BeautifulSoup(page.content, "html.parser")
-      new_postings = self.find_list_items(soup)
-      postings = postings + new_postings
-
-    items = []
-    for p in postings:
-      if p is None: continue
-      items.append(self.item_from_post(p))
-    return items
-
-  def item_from_post(self, job_url):
-    page = requests.get(job_url)
-    post_content = BeautifulSoup(page.content, "html.parser")
-
-    job_title = self.title_from_post(post_content) 
-    if job_title is None: return
-
-    url = job_url 
-    date_created = self.present_time
-    applied = None
-    ignored = None
-    last_access = self.present_time
-    last_check = self.present_time
-
-    original_ad = self.text_from_post(post_content) 
-    if original_ad is None: return
-
-    return ReportItem(self.company_name,
-      job_title,
-      url,
-      date_created,
-      applied,
-      ignored,
-      last_access,
-      last_check,
-      original_ad)
-
-  # Must be implemented by Child    
-  # Must return a list of urls for individual job posts to access
-  def find_list_items(self, bs_obj):
-    return None
-
-  # Must be implemented by Child
-  # Must return a string to use as the job title
-  def title_from_post(self, bs_obj):
-    return None
-
-  # Must be implemented by Child
-  # Must return a list of 
-  def text_from_post(self, bs_obj):
-    return None
-
-
-
-class GoogleCrawler(SoupCrawler):
-  def __init__(self, present_time):
-    super().__init__(present_time,
-     "Google",
-     "https://www.google.com/about/careers/applications/",
-     [ # Remote jobs
-      "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&has_remote=true&target_level=EARLY&target_level=MID",
-      # NY Jobs
-      "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA"])
- 
-  def find_list_items(self, bs_obj):
-    new_postings = bs_obj.find_all("div", class_="sMn82b")
-    output_urls = []
-    for p in new_postings:
-      link_elem = p.find("a", class_="WpHeLc")
-      if link_elem is None: continue
-
-      output_urls.append(self.url_root + link_elem['href'])
-
-    return output_urls
-
-  def title_from_post(self, bs_obj):
-    job_title_elem = bs_obj.find("h3", class_="QJPWVe")
-    if job_title_elem is None: return
-    return job_title_elem.text
-
-  def text_from_post(self, bs_obj):
-    text_elems = [bs_obj.find("div", class_="KwJkGe"),\
-                  bs_obj.find("div", class_="aG5W3")]
-    output = ""
-    for e in text_elems:
-      if e is None: continue
-      output = output +  e.text + "\n\n\n"
-    return output
-  
 
 class MicrosoftCrawler(Crawler):
   def __init__(self, present_time):
@@ -215,32 +90,6 @@ class MicrosoftCrawler(Crawler):
         original_ad))
     return report_items
 
-
-class AppleCrawler(SoupCrawler):
-  def __init__(self, present_time):
-    super().__init__(present_time,
-     "Apple",
-     "https://jobs.apple.com",
-     [ # NY Jobs
-     "https://jobs.apple.com/en-us/search?search=software%20engineer&sort=newest&location=new-york-state985"])
-  
-  def find_list_items(self, bs_obj):
-    new_postings = bs_obj.find_all("a", class_="table--advanced-search__title")
-    output_urls = []
-    for p in new_postings:
-      output_urls.append(self.url_root + p['href'])
-
-    return output_urls
-
-  def title_from_post(self, bs_obj):
-    job_title_elem = bs_obj.find("h1", id="jdPostingTitle")
-    if job_title_elem is None: return
-    return job_title_elem.text
-
-  def text_from_post(self, bs_obj):
-    text_elem = bs_obj.find("div", itemprop="description")
-    if text_elem is None: return
-    return text_elem.text
 
 # TODO: doesn't crawl in bs4, implement a working crawl scheme 
 class NetflixCrawler(Crawler):
