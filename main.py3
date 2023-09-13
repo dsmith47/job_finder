@@ -9,10 +9,12 @@ import os
 import requests
 import time
 
+from jc_lib.alerting import Alerts
 from jc_lib.companies.Google import GoogleCrawler
 from jc_lib.companies.Apple import AppleCrawler
 from jc_lib.companies.Microsoft import MicrosoftCrawler
 from jc_lib.reporting import ReportItem
+
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
@@ -20,6 +22,8 @@ if __name__ == "__main__":
   parser.set_defaults(debug=True)
 
   args = parser.parse_args()
+
+  alerts = Alerts()
 
   print("Starting script...")
   REPORTS_DIR = "output/"
@@ -42,18 +46,25 @@ if __name__ == "__main__":
   # Crawl new jobs
   jobs = []
   crawler = GoogleCrawler(now_datestring)
-  jobs = jobs + crawler.crawl()
-
+  new_jobs = crawler.crawl()
+  if len(new_jobs) < 1: alerts.report_company_missing_jobs(crawler.company)
+  jobs = jobs + new_jobs
+  
   crawler = MicrosoftCrawler(now_datestring)
-  jobs = jobs + crawler.crawl()
-
+  new_jobs = crawler.crawl()
+  if len(new_jobs) < 1: alerts.report_company_missing_jobs(crawler.company)
+  jobs = jobs + new_jobs
+  
   crawler = AppleCrawler(now_datestring)
-  jobs = jobs + crawler.crawl()
+  new_jobs = crawler.crawl()
+  if len(new_jobs) < 1: alerts.report_company_missing_jobs(crawler.company)
+  jobs = jobs + new_jobs
 
   # Output jobs reports
   print("Generating report...")
   ## Match jobs to already-known jobs
   for job in jobs:
+    if len(job.job_title.strip()) < 1: alerts.report_item_missing_title(job)
     if job.url not in all_jobs:
       all_jobs[job.url] = job
     else:
@@ -76,3 +87,4 @@ if __name__ == "__main__":
       output_writer.writerow(job.as_array())
     outfile.close()
   print("Script complete.")
+  print(alerts)
