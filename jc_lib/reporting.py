@@ -36,6 +36,17 @@ class ReportItem:
     self.original_ad = original_ad
     self.updated_ads = []
 
+  def __str__(self):
+    return self.format_row(
+      self.company,
+      self.job_title,
+      self.url,
+      self.date_created,
+      self.date_applied,
+      self.is_ignored,
+      self.date_accessed,
+      self.date_checked)
+
   @staticmethod
   def from_row(header,row):
     item = ReportItem(
@@ -66,17 +77,6 @@ class ReportItem:
     for ad in updated_ads:
       output = output + ',' + ad
     return output
-
-  def __str__(self):
-    return self.format_row(
-      self.company,
-      self.job_title,
-      self.url,
-      self.date_created,
-      self.date_applied,
-      self.is_ignored,
-      self.date_accessed,
-      self.date_checked)
 
   @staticmethod
   def header():
