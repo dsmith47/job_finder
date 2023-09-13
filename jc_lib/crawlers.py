@@ -19,10 +19,7 @@ class Crawler():
 
 class SoupCrawler(Crawler):
   def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[]):
-    self.present_time = present_time
-    self.company_name = company_name
-    self.url_root = url_root
-    self.job_site_urls = job_site_urls
+    super().__init__(present_time, company_name, url_root, job_site_urls)
 
   # Starting at provided urls, parse for all available posts
   def crawl(self):
