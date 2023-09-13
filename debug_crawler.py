@@ -20,4 +20,4 @@ if __name__ == "__main__":
 
   report_items = [crawler.post_process(i) for i in crawler.extract_job_list_items(url)]
   for i in report_items:
-    print(i + i.original_ad + "\n")
+    print(str(i) + i.original_ad + "\n")
