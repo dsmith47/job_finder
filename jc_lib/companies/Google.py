@@ -22,7 +22,7 @@ class GoogleCrawler(SoupCrawler):
     return output_urls
 
   def title_from_post(self, bs_obj):
-    job_title_elem = bs_obj.find("h3", class_="QJPWVe")
+    job_title_elem = bs_obj.find("h2", class_="p1N2lc")
     if job_title_elem is None: return
     return job_title_elem.text
 
