@@ -1,7 +1,16 @@
 # Holds abstract data for web crawlers
 
 import requests
+import time
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.os_manager import ChromeType
 
 from jc_lib.reporting import ReportItem
 
@@ -76,4 +85,30 @@ class SoupCrawler(Crawler):
   # REQUIRED implemented by inheriting class, template report items from provided object
   def extract_job_list_items(self, bs_obj):
     raise Exception("Unimplemented extract_job_list_items: child class must implement extract_job_list_items(bs_obj) method")
+
+
+class SeleniumCrawler(Crawler):
+  # Configure Selenium
+  options = webdriver.ChromeOptions()
+  chrome_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+  chrome_service = Service(chrome_path)
+
+  driver = Chrome(options=options)
+  driver.implicitly_wait(20)
+
+  def crawl_page(self, url):
+    i = 1
+    web_object = self.query_page(url.format(i));
+    new_postings = self.extract_job_list_items(url.format(i))
+    postings = new_postings
+    while len(new_postings) > 0:
+      i = i + 1
+      new_postings = self.extract_job_list_items(url.format(i))
+      postings = postings + new_postings
+    return postings
+
+  def query_page(self, url):
+    SeleniumCrawler.driver.get(url)
+    # Need to load the actual page
+    time.sleep(30)
 
