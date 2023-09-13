@@ -8,13 +8,9 @@ import os
 import requests
 import time
 
-from jc_lib.reporting import ReportItem
-from jc_lib.crawlers import Crawler,SoupCrawler
-
-from jc_lib.companies.Microsoft import MicrosoftCrawler
-
 from jc_lib.companies.Google import GoogleCrawler
 from jc_lib.companies.Apple import AppleCrawler
+from jc_lib.companies.Microsoft import MicrosoftCrawler
 
 
 if __name__ == "__main__":
@@ -38,14 +34,14 @@ if __name__ == "__main__":
 
   # Crawl new jobs
   jobs = []
-  #crawler = GoogleCrawler(now_datestring)
-  #jobs = jobs + crawler.crawl()
+  crawler = GoogleCrawler(now_datestring)
+  jobs = jobs + crawler.crawl()
 
   crawler = MicrosoftCrawler(now_datestring)
   jobs = jobs + crawler.crawl()
 
-  #crawler = AppleCrawler(now_datestring)
-  #jobs = jobs + crawler.crawl()
+  crawler = AppleCrawler(now_datestring)
+  jobs = jobs + crawler.crawl()
 
   # Output jobs reports
   print("Generating report...")
@@ -61,8 +57,6 @@ if __name__ == "__main__":
       all_jobs[job.url].date_checked = max(all_jobs[job.url].date_created, job.date_created)
       if all_jobs[job.url].original_ad != job.original_ad or (len(all_jobs[job.url].updated_ads)>0 and all_jobs[job.url].updated_ads[-1] != job.original_ad):
         all_jobs[job.url].updated_ads.append("["+job.date_created+"]\n"+job.original_ad)
-  for job in all_jobs.values():
-    print(job)
   ## Write output
   outfile = open(FILE_NAME + now_filepath + ".csv", "w", newline='')
   output_writer = csv.writer(outfile)
