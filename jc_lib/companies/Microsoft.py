@@ -17,30 +17,17 @@ class MicrosoftCrawler(SeleniumCrawler):
     # Access the page to parse
     finished_driver = self.query_page(url)
 
-    # TODO: makes this lookup more element-agnostic
     job_posts = finished_driver.find_elements(By.CLASS_NAME, "ms-List-cell")
     report_items = []
     for l in job_posts:
-      #job_number = l.find_element(By.CLASS_NAME, "css-404").get_attribute("aria-label")
       job_number = l.find_element(By.XPATH, "*").get_attribute("aria-label").split()[-1]
       job_url = self.url_root.format(job_number)
-      job_title = l.find_element(By.TAG_NAME, "h2").text
 
-      date_created = self.present_time
-      applied = None
-      ignored = None
-      last_access = self.present_time
-      last_check = self.present_time
-      original_ad = ""
+      text_items = l.get_attribute('innerText').split('\n')
+      job_title = text_items[0]
+      original_ad = '\n'.join(text_items[1:])
 
-      report_items.append(ReportItem(self.company_name,
-        job_title,
-        job_url,
-        date_created,
-        applied,
-        ignored,
-        last_access,
-        last_check,
-        original_ad))
+      report_items.append(self.make_report_item(job_title, original_ad, job_url))
+
     return report_items
 

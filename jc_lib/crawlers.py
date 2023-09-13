@@ -38,6 +38,10 @@ class Crawler():
   def query_page(self, url):
     raise Exception("Unimplemented query_page: child class must implement query_page(url) method")
 
+  # REQUIRED implemented by inheriting class, template report items from provided object
+  def extract_job_list_items(self, bs_obj):
+    raise Exception("Unimplemented extract_job_list_items: child class must implement extract_job_list_items(bs_obj) method")
+
   # OPTIONAL after each item is collected, runs optional logic on it before returning (adds detail to description text, etc)
   def post_process(self, item):
     return item
@@ -81,11 +85,6 @@ class SoupCrawler(Crawler):
   def query_page(self, url):
     page = requests.get(url)
     return BeautifulSoup(page.content, "html.parser")
-
-  # REQUIRED implemented by inheriting class, template report items from provided object
-  def extract_job_list_items(self, bs_obj):
-    raise Exception("Unimplemented extract_job_list_items: child class must implement extract_job_list_items(bs_obj) method")
-
 
 class SeleniumCrawler(Crawler):
   # Configure Selenium
