@@ -31,6 +31,6 @@ class Alerts():
         output += val + '\n'
         output += "\n\n\n"
 
-    output += "Total Errors: {}\n".format(len(self.companies_no_jobs) + len(self.missing_title_items))
+    output += "Total Errors Detected: {}\n".format(len(self.companies_no_jobs) + len(self.missing_title_items))
 
     return output
