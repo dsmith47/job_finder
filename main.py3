@@ -34,6 +34,17 @@ class Crawler():
     self.url_root = url_root
     self.job_site_urls = job_site_urls
 
+  def crawl(self):
+    raise Exception("Unimplemented Crawl: child class must implement crawl() method")
+
+
+class SoupCrawler(Crawler):
+  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[]):
+    self.present_time = present_time
+    self.company_name = company_name
+    self.url_root = url_root
+    self.job_site_urls = job_site_urls
+
   # Starting at provided urls, parse for all available posts
   def crawl(self):
     print("Crawling for {}...".format(self.company_name))
@@ -44,6 +55,7 @@ class Crawler():
 
   # load pages for individual job advertisements, parse them into jobs
   def access_pages(self, url):
+    print("Scraping {}".format(url))
     page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
     
@@ -52,6 +64,7 @@ class Crawler():
     i = 1
     while len(new_postings) > 0:
       i = i + 1
+      print("Scraping {}".format(url+"&page={}".format(i)))
       page = requests.get(url+"&page={}".format(i))
       soup = BeautifulSoup(page.content, "html.parser")
       new_postings = self.find_list_items(soup)
@@ -107,7 +120,7 @@ class Crawler():
 
 
 
-class GoogleCrawler(Crawler):
+class GoogleCrawler(SoupCrawler):
   def __init__(self, present_time):
     super().__init__(present_time,
      "Google",
@@ -203,7 +216,7 @@ class MicrosoftCrawler(Crawler):
     return report_items
 
 
-class AppleCrawler(Crawler):
+class AppleCrawler(SoupCrawler):
   def __init__(self, present_time):
     super().__init__(present_time,
      "Apple",
