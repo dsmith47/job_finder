@@ -11,7 +11,7 @@ import time
 from jc_lib.companies.Google import GoogleCrawler
 from jc_lib.companies.Apple import AppleCrawler
 from jc_lib.companies.Microsoft import MicrosoftCrawler
-
+from jc_lib.reporting import ReportItem
 
 if __name__ == "__main__":
   print("Starting script...")
