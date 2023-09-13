@@ -110,5 +110,7 @@ class SeleniumCrawler(Crawler):
   def query_page(self, url):
     SeleniumCrawler.driver.get(url)
     # Need to load the actual page
+    # TODO: can optimize wait times on loads
     time.sleep(30)
+    return SeleniumCrawler.driver
 
