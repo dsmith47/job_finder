@@ -19,7 +19,7 @@ from jc_lib.reporting import ReportItem
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('--debug', action=argparse.BooleanOptionalAction)
-  parser.set_defaults(debug=True)
+  parser.set_defaults(debug=False)
 
   args = parser.parse_args()
 
@@ -45,6 +45,7 @@ if __name__ == "__main__":
 
   # Crawl new jobs
   jobs = []
+  
   crawler = GoogleCrawler(now_datestring)
   new_jobs = crawler.crawl()
   if len(new_jobs) < 1: alerts.report_company_missing_jobs(crawler.company_name)
@@ -59,7 +60,7 @@ if __name__ == "__main__":
   new_jobs = crawler.crawl()
   if len(new_jobs) < 1: alerts.report_company_missing_jobs(crawler.company_name)
   jobs = jobs + new_jobs
-
+  
   # Output jobs reports
   print("Generating report...")
   ## Match jobs to already-known jobs
