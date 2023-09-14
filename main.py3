@@ -20,6 +20,8 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('--debug', action=argparse.BooleanOptionalAction)
   parser.set_defaults(debug=False)
+  parser.add_argument('--clear_cache', action=argparse.BooleanOptionalAction)
+  parser.set_defaults(clear_cache=True)
 
   args = parser.parse_args()
 
@@ -87,5 +89,10 @@ if __name__ == "__main__":
     for job in all_jobs.values():
       output_writer.writerow(job.as_array())
     outfile.close()
+  if not args.clear_cache:
+    print("Clearing cache...")
+    cache_dir = Crawler.cache_dir
+    for path in os.listdir(cache_dir):
+      os.remove(os.path.join(cache_dir, path))
   print("Script complete.")
   print(alerts)
