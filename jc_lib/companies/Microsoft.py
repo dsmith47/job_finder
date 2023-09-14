@@ -15,8 +15,8 @@ class MicrosoftCrawler(SeleniumCrawler):
 
   def extract_job_list_items(self, url):
     # Access the page to parse
-    finished_driver = self.query_page(url)
-    job_posts = finished_driver.find_elements(By.CLASS_NAME, "ms-List-cell")
+    web_element = self.query_page(url)
+    job_posts = web_element.find_elements(By.CLASS_NAME, "ms-List-cell")
     report_items = []
     for l in job_posts:
       job_number = l.find_element(By.XPATH, "*").get_attribute("aria-label").split()[-1]

@@ -34,7 +34,7 @@ class Crawler():
     return [self.post_process(j) for j in new_jobs if j is not None]
 
   # used to access page content (centralizes cache/retries)
-  def query_internal(self, url):
+  def query_page(self, url):
     try :
       return self.query_internal(url)
     except RequestException | SeleniumTimeoutException as e:
@@ -96,7 +96,7 @@ class SoupCrawler(Crawler):
       all_postings = all_postings + new_postings
     return all_postings
 
-  def query_page(self, url):
+  def query_internal(self, url):
     page = requests.get(url)
     return BeautifulSoup(page.content, "html.parser")
 
@@ -118,7 +118,7 @@ class SeleniumCrawler(Crawler):
       postings = postings + new_postings
     return postings
 
-  def query_page(self, url, delay = None, delay_time = 0):
+  def query_internal(self, url, delay = None, delay_time = 0):
     SeleniumCrawler.driver.get(url)
     # Need to load the actual page
     if delay is None or delay_time < 1:
@@ -126,5 +126,5 @@ class SeleniumCrawler(Crawler):
     else:
       WebDriverWait(SeleniumCrawler.driver, delay_time).until(delay)
 
-    return SeleniumCrawler.driver
+    return SeleniumCrawler.driver.find_element(By.XPATH, "*")
 
