@@ -1,9 +1,11 @@
 # Holds abstract data for web crawlers
 
 import requests
+from requests.exceptions import RequestException
 import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException as SeleniumTimeoutException
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -21,6 +23,7 @@ class Crawler():
     self.company_name = company_name
     self.url_root = url_root
     self.job_site_urls = job_site_urls
+    self.retries = 3
 
   # Starting at provided urls, parse for all available posts
   def crawl(self):
@@ -30,13 +33,24 @@ class Crawler():
       new_jobs = new_jobs + self.crawl_page(url)
     return [self.post_process(j) for j in new_jobs if j is not None]
 
+  # used to access page content (centralizes cache/retries)
+  def query_internal(self, url):
+    try :
+      return self.query_internal(url)
+    except RequestException | SeleniumTimeoutException as e:
+      self.retries = self.retries - 1
+      if self.retries >= 0:
+        self.query_internal(url)
+      else:
+        raise(e)
+
   # REQUIRED access urls associated with company to extract current job posts
   def crawl_page(self, url):
     raise Exception("Unimplemented crawl_page: child class must implement crawl_page(url) method")
 
   # REQUIRED query a single page, return a tree object that parser can interact with
-  def query_page(self, url):
-    raise Exception("Unimplemented query_page: child class must implement query_page(url) method")
+  def query_internal(self, url):
+    raise Exception("Unimplemented query_internal: child class must implement query_internal(url) method")
 
   # REQUIRED implemented by inheriting class, template report items from provided object
   def extract_job_list_items(self, bs_obj):
