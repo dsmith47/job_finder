@@ -38,6 +38,7 @@ class Crawler():
     try :
       return self.query_internal(url)
     except RequestException | SeleniumTimeoutException as e:
+      print("Request Excepted. {} retries remaining. url {}".format(self.retries, url))
       self.retries = self.retries - 1
       if self.retries >= 0:
         self.query_internal(url)
