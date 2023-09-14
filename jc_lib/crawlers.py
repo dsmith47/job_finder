@@ -1,5 +1,7 @@
 # Holds abstract data for web crawlers
-
+import os
+import pickle
+import re
 import requests
 from requests.exceptions import RequestException
 import time
@@ -24,6 +26,7 @@ class Crawler():
     self.url_root = url_root
     self.job_site_urls = job_site_urls
     self.retries = 3
+    self.cache_dir = ".cache/"
 
   # Starting at provided urls, parse for all available posts
   def crawl(self):
@@ -35,15 +38,51 @@ class Crawler():
 
   # used to access page content (centralizes cache/retries)
   def query_page(self, url):
+    return_obj = self.check_cache(url)
+    if return_obj is not None: return return_obj
+
     try :
-      return self.query_internal(url)
+      return_obj = self.query_internal(url)
     except RequestException | SeleniumTimeoutException as e:
       print("Request Excepted. {} retries remaining. url {}".format(self.retries, url))
       self.retries = self.retries - 1
       if self.retries >= 0:
-        self.query_internal(url)
+        return_obj = self.query_internal(url)
       else:
         raise(e)
+    self.cache_obj(url,return_obj)
+    return return_obj
+
+  def check_cache(self,url):
+    cache_filename = self.url_to_cache_path(url)
+    cached_object = None
+    if os.path.isfile(cache_filename):
+      with open(cache_filename, 'rb') as cache_file:
+        cached_object = pickle.load(cache_file)
+    return cached_object
+
+  def cache_obj(self,url,obj):
+    cache_filename = self.url_to_cache_path(url)
+    print(obj)
+    with open(cache_filename, 'wb') as cache_file:
+      pickle.dump(obj, cache_file)
+
+  def url_to_cache_path(self, url):
+    # Strip protocol 'https:'
+    output_path = url[6:]
+    # Remove spaces and periods
+    output_path = output_path.replace("/", "").replace(".", "")
+    # Extract numbers from the path and prepend it
+    # necessary to lead with job id and domain or they will get trimmed
+    numeric_context = re.findall('(\d+)', output_path)
+    numeric_prefix = ""
+    for n in numeric_context:
+      numeric_prefix = numeric_prefix + n
+    output_path = numeric_prefix + output_path
+    # Shrink to 99 characters
+    # We have to count that a job-id appears shortly after the domain. In pactice this should be nbd but a more rigorous implementation would probably extrat useful domains/numbers with regex
+    output_path = output_path[:99]
+    return os.path.join(self.cache_dir, output_path)
 
   # REQUIRED access urls associated with company to extract current job posts
   def crawl_page(self, url):
@@ -126,6 +165,5 @@ class SeleniumCrawler(Crawler):
       time.sleep(30)
     else:
       WebDriverWait(SeleniumCrawler.driver, delay_time).until(delay)
-
-    return SeleniumCrawler.driver.find_element(By.XPATH, "*")
+    return BeautifulSoup(SeleniumCrawler.driver.find_element(By.XPATH, "*").get_attribute('outerHTML'), "html.parser")
 

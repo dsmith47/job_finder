@@ -14,19 +14,20 @@ class MicrosoftCrawler(SeleniumCrawler):
       "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&lc=New%20York%2C%20United%20States&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&l=en_us&pg={}&pgSz=20&o=Recent&flt=true"])
 
   def extract_job_list_items(self, url):
-    # Access the page to parse
-    web_element = self.query_page(url)
-    job_posts = web_element.find_elements(By.CLASS_NAME, "ms-List-cell")
     report_items = []
+    # Access the page to parse
+    bs_obj = self.query_page(url)
+    job_posts = bs_obj.find_all(class_="ms-List-cell")
     for l in job_posts:
-      job_number = l.find_element(By.XPATH, "*").get_attribute("aria-label").split()[-1]
+      al = l.find(lambda tag: tag.name =="div" and "aria-label" in tag.attrs)
+      job_number = al["aria-label"].split()[-1]
       job_url = self.url_root.format(job_number)
-
-      text_items = l.get_attribute('innerText').split('\n')
-      job_title = text_items[0]
-      original_ad = '\n'.join(text_items[1:])
+      job_title = l.find(["h2", "h3"]).get_text()
+      text_items = [i.get_text() for i in bs_obj.findAll(text=True)]
+      i = 0
+      while text_items[i] == job_title: i = i + 1
+      original_ad = '\n'.join(text_items[i+1:])
 
       report_items.append(self.make_report_item(job_title, original_ad, job_url))
-
     return report_items
 
