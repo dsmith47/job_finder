@@ -47,17 +47,17 @@ if __name__ == "__main__":
   jobs = []
   crawler = GoogleCrawler(now_datestring)
   new_jobs = crawler.crawl()
-  if len(new_jobs) < 1: alerts.report_company_missing_jobs(crawler.company)
+  if len(new_jobs) < 1: alerts.report_company_missing_jobs(crawler.company_name)
   jobs = jobs + new_jobs
   
   crawler = MicrosoftCrawler(now_datestring)
   new_jobs = crawler.crawl()
-  if len(new_jobs) < 1: alerts.report_company_missing_jobs(crawler.company)
+  if len(new_jobs) < 1: alerts.report_company_missing_jobs(crawler.company_name)
   jobs = jobs + new_jobs
   
   crawler = AppleCrawler(now_datestring)
   new_jobs = crawler.crawl()
-  if len(new_jobs) < 1: alerts.report_company_missing_jobs(crawler.company)
+  if len(new_jobs) < 1: alerts.report_company_missing_jobs(crawler.company_name)
   jobs = jobs + new_jobs
 
   # Output jobs reports
