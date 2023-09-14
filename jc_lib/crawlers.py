@@ -140,9 +140,11 @@ class SoupCrawler(Crawler):
     return BeautifulSoup(page.content, "html.parser")
 
 class SeleniumCrawler(Crawler):
-  # Configure Selenium
-  options = webdriver.ChromeOptions()
-  driver = Chrome(options=options)
+  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[]):
+    super().__init__(present_time, company_name, url_root, job_site_urls)
+    # Configure Selenium
+    options = webdriver.ChromeOptions()
+    self.driver = Chrome(options=options)
   
   def crawl_page(self, url):
     i = 1
@@ -158,11 +160,11 @@ class SeleniumCrawler(Crawler):
     return postings
 
   def query_internal(self, url, delay = None, delay_time = 0):
-    SeleniumCrawler.driver.get(url)
+    self.driver.get(url)
     # Need to load the actual page
     if delay is None or delay_time < 1:
       time.sleep(30)
     else:
       WebDriverWait(SeleniumCrawler.driver, delay_time).until(delay)
-    return BeautifulSoup(SeleniumCrawler.driver.find_element(By.XPATH, "*").get_attribute('outerHTML'), "html.parser")
+    return BeautifulSoup(self.driver.find_element(By.XPATH, "*").get_attribute('outerHTML'), "html.parser")
 

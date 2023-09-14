@@ -57,6 +57,7 @@ if __name__ == "__main__":
   new_jobs = crawler.crawl()
   if len(new_jobs) < 1: alerts.report_company_missing_jobs(crawler.company_name)
   jobs = jobs + new_jobs
+  del crawler
   
   crawler = AppleCrawler(now_datestring)
   new_jobs = crawler.crawl()
@@ -89,9 +90,9 @@ if __name__ == "__main__":
     for job in all_jobs.values():
       output_writer.writerow(job.as_array())
     outfile.close()
-  if not args.clear_cache:
+  if args.clear_cache:
     print("Clearing cache...")
-    cache_dir = Crawler.cache_dir
+    cache_dir = ".cache/" 
     for path in os.listdir(cache_dir):
       os.remove(os.path.join(cache_dir, path))
   print("Script complete.")
