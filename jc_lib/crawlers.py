@@ -63,7 +63,6 @@ class Crawler():
 
   def cache_obj(self,url,obj):
     cache_filename = self.url_to_cache_path(url)
-    print(obj)
     with open(cache_filename, 'wb') as cache_file:
       pickle.dump(obj, cache_file)
 
@@ -135,7 +134,7 @@ class SoupCrawler(Crawler):
       new_postings = self.extract_job_list_items(soup)
       all_postings = all_postings + new_postings
     return all_postings
-
+  
   def query_internal(self, url):
     page = requests.get(url)
     return BeautifulSoup(page.content, "html.parser")
@@ -144,7 +143,7 @@ class SeleniumCrawler(Crawler):
   # Configure Selenium
   options = webdriver.ChromeOptions()
   driver = Chrome(options=options)
-
+  
   def crawl_page(self, url):
     i = 1
     print("Scraping {}".format(url.format(i)))
