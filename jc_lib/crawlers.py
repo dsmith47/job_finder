@@ -89,9 +89,6 @@ class SoupCrawler(Crawler):
 class SeleniumCrawler(Crawler):
   # Configure Selenium
   options = webdriver.ChromeOptions()
-  #chrome_path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
-  #chrome_service = Service(chrome_path)
-
   driver = Chrome(options=options)
 
   def crawl_page(self, url):
@@ -108,7 +105,6 @@ class SeleniumCrawler(Crawler):
   def query_page(self, url, delay = None, delay_time = 0):
     SeleniumCrawler.driver.get(url)
     # Need to load the actual page
-    # TODO: can optimize wait times on loads
     if delay is None or delay_time < 1:
       time.sleep(30)
     else:
