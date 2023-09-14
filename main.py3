@@ -11,8 +11,9 @@ import time
 
 from jc_lib.alerting import Alerts
 from jc_lib.companies.Google import GoogleCrawler
-from jc_lib.companies.Apple import AppleCrawler
 from jc_lib.companies.Microsoft import MicrosoftCrawler
+from jc_lib.companies.Apple import AppleCrawler
+from jc_lib.companies.Amazon import AmazonCrawler
 from jc_lib.reporting import ReportItem
 
 
@@ -63,6 +64,12 @@ if __name__ == "__main__":
   new_jobs = crawler.crawl()
   if len(new_jobs) < 1: alerts.report_company_missing_jobs(crawler.company_name)
   jobs = jobs + new_jobs
+  
+  crawler = AmazonCrawler(now_datestring)
+  new_jobs = crawler.crawl()
+  if len(new_jobs) < 1: alerts.report_company_missing_jobs(crawler.company_name)
+  jobs = jobs + new_jobs
+  del crawler
   
   # Output jobs reports
   print("Generating report...")
