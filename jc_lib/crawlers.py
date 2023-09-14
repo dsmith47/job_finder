@@ -93,11 +93,13 @@ class SeleniumCrawler(Crawler):
 
   def crawl_page(self, url):
     i = 1
+    print("Scraping {}".format(url.format(i)))
     web_object = self.query_page(url.format(i));
     new_postings = self.extract_job_list_items(url.format(i))
     postings = new_postings
     while len(new_postings) > 0:
       i = i + 1
+      print("Scraping {}".format(url.format(i)))
       new_postings = self.extract_job_list_items(url.format(i))
       postings = postings + new_postings
     return postings
