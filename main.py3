@@ -86,9 +86,13 @@ if __name__ == "__main__":
 
   ## Enqueue initial crawlers
   unused_crawlers.put(GoogleCrawler)
+  alerts.register_company("Google")
   unused_crawlers.put(MicrosoftCrawler)
+  alerts.register_company("Microsoft")
   unused_crawlers.put(AppleCrawler)
+  alerts.register_company("Apple")
   unused_crawlers.put(AmazonCrawler)
+  alerts.register_company("Amazon")
  
   ## Setup workers 
   crawler1 = Process(target=crawl_worker, args=(unused_crawlers,now_datestring,list_items_queue, output_queue))
@@ -125,6 +129,7 @@ if __name__ == "__main__":
   print("Generating report...")
   ## Match jobs to already-known jobs
   for job in jobs:
+    alerts.count_company_from_job(job)
     if len(job.job_title.strip()) < 1: alerts.report_item_missing_title(job)
     if job.url not in all_jobs:
       all_jobs[job.url] = job
