@@ -31,10 +31,8 @@ def crawl_worker(input_queue, now_datestring, post_process_queue, output_queue):
     crawler = crawlerClass(now_datestring)
     for item in crawler.crawl():
       if crawler.has_post_processing:
-        print("POST PROCESSING - {}".format(crawler.company_name))
         post_process_queue.put((item, crawler.post_process))
       else:
-        print("NO POST PROCESSING")
         output_queue.put(item)
   output_queue.put(None)
 
@@ -49,7 +47,6 @@ def post_process_worker(post_process_queue, output_queue):
     if item == None: break
     report_item = item[0]
     process_func = item[1]
-    print("POST PROCESSING IS HAPPENING!!!!!!!!!!!!!!")
     output_queue.put(process_func(report_item, driver))
   output_queue.put(None)
 
