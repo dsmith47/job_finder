@@ -18,7 +18,6 @@ from jc_lib.reporting import ReportItem
 
 from multiprocessing import Queue
 from multiprocessing import Process
-from multiprocessing import Pool
 from multiprocessing import set_start_method
 
 # Primary web crawler.
