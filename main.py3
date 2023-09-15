@@ -123,10 +123,6 @@ if __name__ == "__main__":
     p.start()
 
   while closed_workers < len(processes): 
-    print("REPORT")
-    print(processes[0].is_alive())
-    print(processes[1].is_alive())
-    print(processes[2].is_alive())
     item = output_queue.get()
     if item:
       jobs.append(item)
@@ -142,7 +138,6 @@ if __name__ == "__main__":
   print("Generating report...")
   ## Match jobs to already-known jobs
   for job in jobs:
-    print(job)
     alerts.count_company_from_job(job)
     if len(job.job_title.strip()) < 1: alerts.report_item_missing_title(job)
     if job.url not in all_jobs:
