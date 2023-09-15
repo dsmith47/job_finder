@@ -67,8 +67,8 @@ if __name__ == "__main__":
   parser.add_argument('--debug', action=argparse.BooleanOptionalAction)
   parser.set_defaults(debug=False)
   parser.add_argument('--clear-cache', action=argparse.BooleanOptionalAction)
-  parser.add_argument('--num-crawlers', type=int, default=2, help="The number of workers to commit to web crawling (min 1)")
-  parser.add_argument('--num-item-processors', type=int, default=2, help="The number of workers to commit to processing items produced in crawling (min 1)")
+  parser.add_argument('--num-crawlers', type=int, default=7, help="The number of workers to commit to web crawling (min 1)")
+  parser.add_argument('--num-item-processors', type=int, default=1, help="The number of workers to commit to processing items produced in crawling (min 1)")
   parser.set_defaults(clear_cache=True)
 
   args = parser.parse_args()
