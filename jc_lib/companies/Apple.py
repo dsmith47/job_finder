@@ -6,7 +6,8 @@ class AppleCrawler(SoupCrawler):
      "Apple",
      "https://jobs.apple.com",
      [ # NY Jobs
-     "https://jobs.apple.com/en-us/search?search=software%20engineer&sort=newest&location=new-york-state985&page={}"])
+     "https://jobs.apple.com/en-us/search?search=software%20engineer&sort=newest&location=new-york-state985&page={}"],
+     True)
 
   def extract_job_list_items(self, bs_obj):
     output = []
@@ -19,7 +20,7 @@ class AppleCrawler(SoupCrawler):
       output.append(self.make_report_item(job_url=job_url))
     return output
 
-  def post_process(self, report_item):
+  def post_process(self, report_item, driver):
     bs_obj = self.query_page(report_item.url)
     text_nodes = [i.get_text() for i in bs_obj.findAll(text=True)]
     i = 0

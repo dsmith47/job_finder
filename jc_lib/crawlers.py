@@ -20,13 +20,14 @@ from jc_lib.reporting import ReportItem
 
 
 class Crawler():
-  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[]):
+  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[], has_post_processing=False):
     self.present_time = present_time
     self.company_name = company_name
     self.url_root = url_root
     self.job_site_urls = job_site_urls
     self.retries = 3
     self.cache_dir = ".cache/"
+    self.has_post_processing = has_post_processing 
 
   # Starting at provided urls, parse for all available posts
   def crawl(self):
@@ -34,7 +35,7 @@ class Crawler():
     new_jobs = []
     for url in self.job_site_urls:
       new_jobs = new_jobs + self.crawl_page(url)
-    return [self.post_process(j) for j in new_jobs if j is not None]
+    return [j for j in new_jobs if j is not None]
 
   # used to access page content (centralizes cache/retries)
   def query_page(self, url):
@@ -96,7 +97,7 @@ class Crawler():
     raise Exception("Unimplemented extract_job_list_items: child class must implement extract_job_list_items(bs_obj) method")
 
   # OPTIONAL after each item is collected, runs optional logic on it before returning (adds detail to description text, etc)
-  def post_process(self, item):
+  def post_process(self, item, web_driver):
     return item
 
   def make_report_item(self, job_title='', job_text='', job_url=''):
@@ -118,8 +119,8 @@ class Crawler():
 
 
 class SoupCrawler(Crawler):
-  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[]):
-    super().__init__(present_time, company_name, url_root, job_site_urls)
+  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[], has_post_processing=False):
+    super().__init__(present_time, company_name, url_root, job_site_urls, has_post_processing)
 
   def crawl_page(self, url):
     i = 1
@@ -140,8 +141,8 @@ class SoupCrawler(Crawler):
     return BeautifulSoup(page.content, "html.parser")
 
 class SeleniumCrawler(Crawler):
-  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[]):
-    super().__init__(present_time, company_name, url_root, job_site_urls)
+  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[], has_post_processing=False):
+    super().__init__(present_time, company_name, url_root, job_site_urls, has_post_processing)
     # Configure Selenium
     options = webdriver.ChromeOptions()
     self.driver = Chrome(options=options)

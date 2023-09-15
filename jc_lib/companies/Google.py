@@ -8,7 +8,8 @@ class GoogleCrawler(SoupCrawler):
      [ # Remote jobs
       "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&has_remote=true&target_level=EARLY&target_level=MID&page={}",
       # NY Jobs
-      "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA&page={}"])
+      "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA&page={}"],
+     True)
 
   def extract_job_list_items(self, bs_obj):
     output = []
@@ -22,7 +23,7 @@ class GoogleCrawler(SoupCrawler):
     return output
 
   # Assumes the google content page stats with the Job title, and the rest can safely be included as text
-  def post_process(self, report_item):
+  def post_process(self, report_item, driver):
     bs_obj = self.query_page(report_item.url)
     text_nodes = [i.get_text() for i in bs_obj.findAll(text=True)]
     i = 0
@@ -30,3 +31,4 @@ class GoogleCrawler(SoupCrawler):
     report_item.job_title = text_nodes[i]
     report_item.original_ad = ''.join(text_nodes[i+1:])
     return report_item
+

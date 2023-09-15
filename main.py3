@@ -30,7 +30,12 @@ def crawl_worker(input_queue, now_datestring, post_process_queue, output_queue):
     crawlerClass = input_queue.get()
     crawler = crawlerClass(now_datestring)
     for item in crawler.crawl():
-      output_queue.put(item)
+      if crawler.has_post_processing:
+        print("POST PROCESSING - {}".format(crawler.company_name))
+        post_process_queue.put((item, crawler.post_process))
+      else:
+        print("NO POST PROCESSING")
+        output_queue.put(item)
   output_queue.put(None)
 
 # Side process for crawlers that need their job items post-processed.
@@ -38,10 +43,14 @@ def crawl_worker(input_queue, now_datestring, post_process_queue, output_queue):
 #
 # Signals completion to Consumers by sending None.
 def post_process_worker(post_process_queue, output_queue):
+  driver = None
   while True:
     item = post_process_queue.get()
-    output_queue.put(item)
     if item == None: break
+    report_item = item[0]
+    process_func = item[1]
+    print("POST PROCESSING IS HAPPENING!!!!!!!!!!!!!!")
+    output_queue.put(process_func(report_item, driver))
   output_queue.put(None)
 
 
@@ -114,6 +123,10 @@ if __name__ == "__main__":
     p.start()
 
   while closed_workers < len(processes): 
+    print("REPORT")
+    print(processes[0].is_alive())
+    print(processes[1].is_alive())
+    print(processes[2].is_alive())
     item = output_queue.get()
     if item:
       jobs.append(item)
@@ -129,6 +142,7 @@ if __name__ == "__main__":
   print("Generating report...")
   ## Match jobs to already-known jobs
   for job in jobs:
+    print(job)
     alerts.count_company_from_job(job)
     if len(job.job_title.strip()) < 1: alerts.report_item_missing_title(job)
     if job.url not in all_jobs:

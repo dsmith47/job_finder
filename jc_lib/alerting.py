@@ -12,16 +12,16 @@ class Alerts():
     if report_item.company in self.missing_title_items.keys(): return
     self.missing_title_items[report_item.company] = report_item
 
-  def register_company(company_name):
+  def register_company(self, company_name):
     self.jobs_by_company[company_name] = 0
 
-  def count_company(company_name):
-    if company_name in self.jobs_by_company:
+  def count_company(self, company_name):
+    if company_name not in self.jobs_by_company:
       self.jobs_by_company[company_name] = 0
     self.jobs_by_company[company_name] += 1
 
-  def count_company_from_job(report_item):
-    self.count_company(report_item.company_name)
+  def count_company_from_job(self, report_item):
+    self.count_company(report_item.company)
 
   def __str__(self):
     output = ""
@@ -39,20 +39,21 @@ class Alerts():
     if len(self.missing_title_items) < 1:
       output += "All items appear regular\n"
     else:
-      for key,val in self.missing_title_items:
+      print(len(self.missing_title_items))
+      for key in self.missing_title_items:
         output += key + '\n'
-        output += val.original_ad + '\n'
+        output += self.missing_title_items[key].original_ad + '\n'
         output += key+" ^^^^^^^^^^^^^^^^^^^^^^^^ JOB_TEXT ^^^^^^^^^^^^^^^^^^^^^^^^" + '\n'
         output += key+" vvvvvvvvvvvvvvvvvvvvvvvv JOB_INFO vvvvvvvvvvvvvvvvvvvvvvvv" + '\n'
-        output += val + '\n'
+        output += str(self.missing_title_items[key]) + '\n'
         output += "\n\n\n"
 
     # We have generated job counts, it isn't a strong signal but it could be useful
     output += "Jobs detected:\n"
     for company_name in self.jobs_by_company:
-      output += "\t{}: {}\n".format(company_name, self.jobs_by_company[company_name]
+      output += "\t{}: {}\n".format(company_name, self.jobs_by_company[company_name])
 
     # Summarize errors
-    output += "Total Errors Detected: {}\n".format(len(self.companies_no_jobs) + len(self.missing_title_items))
+    output += "Total Errors Detected: {}\n".format(len(companies_no_jobs) + len(self.missing_title_items))
 
     return output

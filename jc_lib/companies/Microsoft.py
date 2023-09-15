@@ -28,7 +28,7 @@ class MicrosoftCrawler(SeleniumCrawler):
       # i = 0
       # while text_items[i] == job_title: i = i + 1
       # original_ad = '\n'.join(text_items[i+1:])
-
+      original_ad = ""
       report_items.append(self.make_report_item(job_title, original_ad, job_url))
     return report_items
 
