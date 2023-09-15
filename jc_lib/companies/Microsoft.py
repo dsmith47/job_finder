@@ -4,14 +4,16 @@ from jc_lib.reporting import ReportItem
 from selenium.webdriver.common.by import By
 
 class MicrosoftCrawler(SeleniumCrawler):
+  JOB_SITE_URLS = [ # Remote jobs
+      "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&lc=United%20States&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&ws=Up%20to%20100%25%20work%20from%20home&l=en_us&pg={}&pgSz=20&o=Recent&flt=true",
+      # NY Jobs
+      "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&lc=New%20York%2C%20United%20States&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&l=en_us&pg={}&pgSz=20&o=Recent&flt=true"]
+
   def __init__(self, present_time):
     super().__init__(present_time,
      "Microsoft",
      "https://jobs.careers.microsoft.com/global/en/job/{}",
-     [ # Remote jobs
-      "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&lc=United%20States&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&ws=Up%20to%20100%25%20work%20from%20home&l=en_us&pg={}&pgSz=20&o=Recent&flt=true",
-      # NY Jobs
-      "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&lc=New%20York%2C%20United%20States&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&l=en_us&pg={}&pgSz=20&o=Recent&flt=true"])
+     MicrosoftCrawler.JOB_SITE_URLS)
 
   def extract_job_list_items(self, url):
     report_items = []

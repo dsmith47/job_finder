@@ -27,8 +27,13 @@ from multiprocessing import set_start_method
 # Signals completion to Consumers by sending None.
 def crawl_worker(input_queue, now_datestring, post_process_queue, output_queue):
   while input_queue.qsize() > 0:
-    crawlerClass = input_queue.get()
+    crawl_instr = input_queue.get()
+    crawlerClass = crawl_instr[0]
+    crawler_url = crawl_instr[1]
+
     crawler = crawlerClass(now_datestring)
+    crawler.job_site_urls = [crawler_url]
+
     for item in crawler.crawl():
       if crawler.has_post_processing:
         post_process_queue.put((item, crawler.post_process))
@@ -50,12 +55,15 @@ def post_process_worker(post_process_queue, output_queue):
     output_queue.put(process_func(report_item, driver))
   output_queue.put(None)
 
+def schedule_crawling(CrawlerClass, schedule_queue):
+  for url in CrawlerClass.JOB_SITE_URLS:
+    schedule_queue.put((CrawlerClass, url))
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('--debug', action=argparse.BooleanOptionalAction)
   parser.set_defaults(debug=False)
-  parser.add_argument('--clear_cache', action=argparse.BooleanOptionalAction)
+  parser.add_argument('--clear-cache', action=argparse.BooleanOptionalAction)
   parser.set_defaults(clear_cache=True)
 
   args = parser.parse_args()
@@ -91,15 +99,15 @@ if __name__ == "__main__":
   output_queue = Queue()
 
   ## Enqueue initial crawlers
-  unused_crawlers.put(GoogleCrawler)
   alerts.register_company("Google")
-  unused_crawlers.put(MicrosoftCrawler)
+  schedule_crawling(GoogleCrawler, unused_crawlers)
   alerts.register_company("Microsoft")
-  unused_crawlers.put(AppleCrawler)
+  schedule_crawling(MicrosoftCrawler, unused_crawlers)
   alerts.register_company("Apple")
-  unused_crawlers.put(AmazonCrawler)
+  schedule_crawling(AppleCrawler, unused_crawlers)
   alerts.register_company("Amazon")
- 
+  schedule_crawling(AmazonCrawler, unused_crawlers)
+
   ## Setup workers 
   crawler1 = Process(target=crawl_worker, args=(unused_crawlers,now_datestring,list_items_queue, output_queue))
   crawler2 = Process(target=crawl_worker, args=(unused_crawlers,now_datestring,list_items_queue, output_queue))
