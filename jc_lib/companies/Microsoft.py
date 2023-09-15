@@ -14,6 +14,7 @@ class MicrosoftCrawler(SeleniumCrawler):
      "Microsoft",
      "https://jobs.careers.microsoft.com/global/en/job/{}",
      MicrosoftCrawler.JOB_SITE_URLS,
+     has_post_processing=True,
      driver=driver)
 
   def extract_job_list_items(self, url):
@@ -26,12 +27,20 @@ class MicrosoftCrawler(SeleniumCrawler):
       job_number = al["aria-label"].split()[-1]
       job_url = self.url_root.format(job_number)
       job_title = l.find(["h2", "h3"]).get_text()
-      # TODO: this ad is unreadable, re-introducing it would be useful bu needs some more work
-      # text_items = [i.get_text() for i in bs_obj.findAll(text=True)]
-      # i = 0
-      # while text_items[i] == job_title: i = i + 1
-      # original_ad = '\n'.join(text_items[i+1:])
-      original_ad = ""
+      text_items = [i.get_text() for i in bs_obj.findAll(text=True)]
+      i = 0
+      j = len(text_items) - 1
+      while text_items[i] != job_title: i = i + 1
+      while j > i and not "..." in text_items[j] : j -= 1
+      original_ad = ''.join(text_items[i+1:j+1])
       report_items.append(self.make_report_item(job_title, original_ad, job_url))
     return report_items
 
+  def post_process(self, report_item, driver):
+    bs_obj = self.query_page(report_item.url)
+    text_items = [i.get_text() for i in bs_obj.findAll(text=True    )]
+    i = 0
+    j = len(text_items) - 1
+    while text_items[i] != "Overview": i = i + 1
+    report_item.original_ad = ' '.join(text_items[i:])
+    return report_item
