@@ -4,12 +4,13 @@ class AppleCrawler(SoupCrawler):
   JOB_SITE_URLS = [ # NY Jobs
      "https://jobs.apple.com/en-us/search?search=software%20engineer&sort=newest&location=new-york-state985&page={}"]
 
-  def __init__(self, present_time):
+  def __init__(self, present_time, driver=None):
     super().__init__(present_time,
      "Apple",
      "https://jobs.apple.com",
      AppleCrawler.JOB_SITE_URLS,
-     True)
+     True,
+     driver=driver)
 
   def extract_job_list_items(self, bs_obj):
     output = []

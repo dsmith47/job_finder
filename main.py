@@ -8,6 +8,11 @@ import datetime
 import os
 import requests
 import time
+from multiprocessing import Queue
+from multiprocessing import Process
+from multiprocessing import set_start_method
+from selenium import webdriver
+from selenium.webdriver import Chrome
 
 from jc_lib.alerting import Alerts
 from jc_lib.companies.Google import GoogleCrawler
@@ -16,9 +21,6 @@ from jc_lib.companies.Apple import AppleCrawler
 from jc_lib.companies.Amazon import AmazonCrawler
 from jc_lib.reporting import ReportItem
 
-from multiprocessing import Queue
-from multiprocessing import Process
-from multiprocessing import set_start_method
 
 # Primary web crawler.
 # Takes a url, pages through any subsequent pages, and outputs any job items 
@@ -28,10 +30,10 @@ from multiprocessing import set_start_method
 def crawl_worker(input_queue, now_datestring, post_process_queue, output_queue):
   while input_queue.qsize() > 0:
     crawl_instr = input_queue.get()
-    crawlerClass = crawl_instr[0]
+    crawler_constructor = crawl_instr[0]
     crawler_url = crawl_instr[1]
 
-    crawler = crawlerClass(now_datestring)
+    crawler = crawler_constructor(now_datestring, driver=None)
     crawler.job_site_urls = [crawler_url]
 
     for item in crawler.crawl():
@@ -46,7 +48,8 @@ def crawl_worker(input_queue, now_datestring, post_process_queue, output_queue):
 #
 # Signals completion to Consumers by sending None.
 def post_process_worker(post_process_queue, output_queue):
-  driver = None
+  options = webdriver.ChromeOptions()
+  driver = Chrome(options=options)
   while True:
     item = post_process_queue.get()
     if item == None: break

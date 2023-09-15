@@ -6,12 +6,13 @@ class GoogleCrawler(SoupCrawler):
       # NY Jobs
       "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&target_level=EARLY&target_level=MID&location=New%20York%2C%20NY%2C%20USA&page={}"]
 
-  def __init__(self, present_time):
+  def __init__(self, present_time, driver=None):
     super().__init__(present_time,
      "Google",
      "https://www.google.com/about/careers/applications/",
      GoogleCrawler.JOB_SITE_URLS,
-     True)
+     True,
+     driver=driver)
 
   def extract_job_list_items(self, bs_obj):
     output = []

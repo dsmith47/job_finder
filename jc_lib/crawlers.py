@@ -20,14 +20,15 @@ from jc_lib.reporting import ReportItem
 
 
 class Crawler():
-  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[], has_post_processing=False):
+  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[], has_post_processing=False, driver=None):
     self.present_time = present_time
     self.company_name = company_name
     self.url_root = url_root
     self.job_site_urls = job_site_urls
     self.retries = 3
     self.cache_dir = ".cache/"
-    self.has_post_processing = has_post_processing 
+    self.has_post_processing = has_post_processing
+    self.driver = driver
 
   # Starting at provided urls, parse for all available posts
   def crawl(self):
@@ -44,7 +45,7 @@ class Crawler():
 
     try :
       return_obj = self.query_internal(url)
-    except RequestException | SeleniumTimeoutException as e:
+    except RequestException as e:
       print("Request Excepted. {} retries remaining. url {}".format(self.retries, url))
       self.retries = self.retries - 1
       if self.retries >= 0:
@@ -119,8 +120,8 @@ class Crawler():
 
 
 class SoupCrawler(Crawler):
-  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[], has_post_processing=False):
-    super().__init__(present_time, company_name, url_root, job_site_urls, has_post_processing)
+  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[], has_post_processing=False, driver=None):
+    super().__init__(present_time, company_name, url_root, job_site_urls, has_post_processing, driver)
 
   def crawl_page(self, url):
     i = 1
@@ -141,11 +142,12 @@ class SoupCrawler(Crawler):
     return BeautifulSoup(page.content, "html.parser")
 
 class SeleniumCrawler(Crawler):
-  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[], has_post_processing=False):
-    super().__init__(present_time, company_name, url_root, job_site_urls, has_post_processing)
+  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[], has_post_processing=False, driver=None):
+    super().__init__(present_time, company_name, url_root, job_site_urls, has_post_processing, driver)
     # Configure Selenium
-    options = webdriver.ChromeOptions()
-    self.driver = Chrome(options=options)
+    if driver is None:
+      options = webdriver.ChromeOptions()
+      self.driver = Chrome(options=options)
   
   def crawl_page(self, url):
     i = 1

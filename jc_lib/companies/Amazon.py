@@ -9,11 +9,12 @@ class AmazonCrawler(SeleniumCrawler):
       # NY Jobs
       "https://www.amazon.jobs/en/search?offset={}&result_limit=10&sort=recent&category%5B%5D=software-development&category%5B%5D=solutions-architect&category%5B%5D=operations-it-support-engineering&category%5B%5D=systems-quality-security-engineering&category%5B%5D=database-administration&category%5B%5D=business-intelligence&category%5B%5D=research-science&category%5B%5D=fulfillment-operations-management&category%5B%5D=business-merchant-development&category%5B%5D=machine-learning-science&category%5B%5D=data-science&city%5B%5D=New%20York&distanceType=Mi&radius=24km&latitude=40.71454&longitude=-74.00712&loc_group_id=&loc_query=New%20York%2C%20New%20York%2C%20United%20States&base_query=engineer&city=New%20York&country=USA&region=New%20York&county=New%20York&query_options=&"]
 
-  def __init__(self, present_time):
+  def __init__(self, present_time, driver=None):
     super().__init__(present_time,
      "Amazon",
      "https://www.amazon.jobs/en/jobs/{}",
-     AmazonCrawler.JOB_SITE_URLS)
+     AmazonCrawler.JOB_SITE_URLS,
+     driver=driver)
 
   # Need to page on number of jobs, not pages
   def crawl_page(self, url):

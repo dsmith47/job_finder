@@ -9,11 +9,12 @@ class MicrosoftCrawler(SeleniumCrawler):
       # NY Jobs
       "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&lc=New%20York%2C%20United%20States&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&l=en_us&pg={}&pgSz=20&o=Recent&flt=true"]
 
-  def __init__(self, present_time):
+  def __init__(self, present_time, driver=None):
     super().__init__(present_time,
      "Microsoft",
      "https://jobs.careers.microsoft.com/global/en/job/{}",
-     MicrosoftCrawler.JOB_SITE_URLS)
+     MicrosoftCrawler.JOB_SITE_URLS,
+     driver=driver)
 
   def extract_job_list_items(self, url):
     report_items = []
