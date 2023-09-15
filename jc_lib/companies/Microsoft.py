@@ -23,10 +23,11 @@ class MicrosoftCrawler(SeleniumCrawler):
       job_number = al["aria-label"].split()[-1]
       job_url = self.url_root.format(job_number)
       job_title = l.find(["h2", "h3"]).get_text()
-      text_items = [i.get_text() for i in bs_obj.findAll(text=True)]
-      i = 0
-      while text_items[i] == job_title: i = i + 1
-      original_ad = '\n'.join(text_items[i+1:])
+      # TODO: this ad is unreadable, re-introducing it would be useful bu needs some more work
+      # text_items = [i.get_text() for i in bs_obj.findAll(text=True)]
+      # i = 0
+      # while text_items[i] == job_title: i = i + 1
+      # original_ad = '\n'.join(text_items[i+1:])
 
       report_items.append(self.make_report_item(job_title, original_ad, job_url))
     return report_items
