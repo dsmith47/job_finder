@@ -67,11 +67,22 @@ if __name__ == "__main__":
   parser.add_argument('--debug', action=argparse.BooleanOptionalAction)
   parser.set_defaults(debug=False)
   parser.add_argument('--clear-cache', action=argparse.BooleanOptionalAction)
+  parser.add_argument('--num-crawlers', type=int, default=2, help="The number of workers to commit to web crawling (min 1)")
+  parser.add_argument('--num-item-processors', type=int, default=2, help="The number of workers to commit to processing items produced in crawling (min 1)")
   parser.set_defaults(clear_cache=True)
 
   args = parser.parse_args()
-
+  NUM_CRAWLERS = 1
+  NUM_ITEM_PROCESSORS = 1
+  if args.num_crawlers >= 1:
+    NUM_CRAWLERS = args.num_crawlers
+  if args.num_item_processors >= 1:
+    NUM_ITEM_PROCESSORS = args.num_item_processors
   alerts = Alerts()
+
+  print("CONFIG")
+  print("NUM_CRAWLERS {}".format(NUM_CRAWLERS))
+  print("NUM_ITEM_PROCESSORS {}".format(NUM_ITEM_PROCESSORS))
 
   print("Starting script...")
   REPORTS_DIR = "output/"
@@ -111,25 +122,34 @@ if __name__ == "__main__":
   alerts.register_company("Amazon")
   schedule_crawling(AmazonCrawler, unused_crawlers)
 
-  ## Setup workers 
+  ## Setup workers
+  """
   crawler1 = Process(target=crawl_worker, args=(unused_crawlers,now_datestring,list_items_queue, output_queue))
   crawler2 = Process(target=crawl_worker, args=(unused_crawlers,now_datestring,list_items_queue, output_queue))
   post_processor = Process(target=post_process_worker, args=(list_items_queue, output_queue))
 
-  crawl_processes = []
   crawl_processes.append(crawler1)
   crawl_processes.append(crawler2)
 
-  item_processes = []
   item_processes.append(post_processor)
+  """
+
+  crawl_processes = []
+  for i in range(NUM_CRAWLERS):
+    p = Process(target=crawl_worker, args=(unused_crawlers,now_datestring,list_items_queue, output_queue))
+    crawl_processes.append(p)
+    p.start()
+  item_processes = []
+  for i in range(NUM_ITEM_PROCESSORS):
+    p = Process(target=post_process_worker, args=(list_items_queue, output_queue))
+    item_processes.append(p)
+    p.start()
+  processes = crawl_processes + item_processes
 
   ## Use blocking calls to extract items from the queue until every process has
   ## signalled its completion.
-  processes = crawl_processes + item_processes
-  closed_workers = 0
-  for p in processes:
-    p.start()
 
+  closed_workers = 0
   while closed_workers < len(processes): 
     item = output_queue.get()
     if item:
