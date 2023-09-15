@@ -14,7 +14,7 @@ class MicrosoftCrawler(SeleniumCrawler):
      "Microsoft",
      "https://jobs.careers.microsoft.com/global/en/job/{}",
      MicrosoftCrawler.JOB_SITE_URLS,
-     has_post_processing=True,
+     has_post_processing=False,
      driver=driver)
 
   def extract_job_list_items(self, url):

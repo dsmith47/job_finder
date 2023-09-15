@@ -14,7 +14,7 @@ class AmazonCrawler(SeleniumCrawler):
      "Amazon",
      "https://www.amazon.jobs/en/jobs/{}",
      AmazonCrawler.JOB_SITE_URLS,
-     has_post_processing=True,
+     has_post_processing=False,
      driver=driver)
 
   # Need to page on number of jobs, not pages
@@ -51,7 +51,7 @@ class AmazonCrawler(SeleniumCrawler):
   #
   def post_process(self, report_item):
     bs_obj = self.query_page(report_item.url)
-   text_nodes = bs_obj.find_all(id="job-detail-body")
+    text_nodes = bs_obj.find_all(id="job-detail-body")
     i = 0
     while len(text_nodes[i].strip()) < 1: i = i + 1
     report_item.original_ad = ''.join(text_nodes)
