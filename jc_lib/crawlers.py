@@ -17,6 +17,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.core.os_manager import ChromeType
 
 from jc_lib.reporting import ReportItem
+from jc_lib.reporting import ParallelReportItem
 
 
 class Crawler():
