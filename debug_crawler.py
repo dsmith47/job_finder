@@ -21,6 +21,6 @@ if __name__ == "__main__":
   elif crawler_code == "Amazon":
     crawler = AmazonCrawler(time)
 
-  report_items = [crawler.post_process(i) for i in crawler.extract_job_list_items(url)]
+  report_items = [crawler.post_process(i, crawler.driver) for i in crawler.extract_job_list_items(url)]
   for i in report_items:
     print(str(i) + i.original_ad + "\n")
