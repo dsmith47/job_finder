@@ -14,7 +14,7 @@ class AmazonCrawler(SeleniumCrawler):
      "Amazon",
      "https://www.amazon.jobs/en/jobs/{}",
      AmazonCrawler.JOB_SITE_URLS,
-     has_post_processing=False,
+     has_post_processing=True,
      driver=driver)
 
   # Need to page on number of jobs, not pages
@@ -22,19 +22,18 @@ class AmazonCrawler(SeleniumCrawler):
     i = 0
     print("Scraping {}".format(url.format(i)))
     web_object = self.query_page(url.format(i));
-    new_postings = self.extract_job_list_items(url.format(i))
+    new_postings = self.extract_job_list_items(web_object)
     postings = new_postings
     while len(new_postings) > 0:
       i = i + 10
       print("Scraping {}".format(url.format(i)))
-      new_postings = self.extract_job_list_items(url.format(i))
+      web_object = self.query_page(url.format(i));
+      new_postings = self.extract_job_list_items(web_object)
       postings = postings + new_postings
     return postings
 
-  def extract_job_list_items(self, url):
+  def extract_job_list_items(self, bs_obj):
     report_items = []
-    # Access the page to parse
-    bs_obj = self.query_page(url)
     job_posts = bs_obj.find_all(class_="job")
     for l in job_posts:
       al = l.find(lambda tag: tag.name =="div" and "aria-label" in tag.attrs)
@@ -45,15 +44,14 @@ class AmazonCrawler(SeleniumCrawler):
       original_ad = '\n'.join(text_nodes)
       report_items.append(self.make_report_item(job_title, original_ad, job_url))
     return report_items
-  # TODO: the job ad is pretty thin on its own, but accessing these pages seems
-  # to require selenium (and therefore is very slow). Improving the content
-  # requires faster loading.
-  #
-  def post_process(self, report_item):
+
+  def post_process(self, report_item, driver=None):
+    print("POST-PROCESSING: {}".format(report_item.url))
     bs_obj = self.query_page(report_item.url)
-    text_nodes = bs_obj.find_all(id="job-detail-body")
+    text_items = [i.get_text() for i in bs_obj.find_all(id="job-detail-body")]
     i = 0
-    while len(text_nodes[i].strip()) < 1: i = i + 1
-    report_item.original_ad = ''.join(text_nodes)
+    while i < len(text_items) and len(text_items[i].strip()) < 1: i = i + 1
+    if i >= len(text_items): i = 0
+    report_item.original_ad = ''.join(text_items[i:])
     return report_item
 

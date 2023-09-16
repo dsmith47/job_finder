@@ -27,6 +27,7 @@ class GoogleCrawler(SoupCrawler):
 
   # Assumes the google content page stats with the Job title, and the rest can safely be included as text
   def post_process(self, report_item, driver):
+    print("POST-PROCESSING: {}".format(report_item.url))
     bs_obj = self.query_page(report_item.url)
     text_nodes = [i.get_text() for i in bs_obj.findAll(text=True)]
     i = 0

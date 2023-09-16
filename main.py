@@ -19,6 +19,7 @@ from jc_lib.companies.Google import GoogleCrawler
 from jc_lib.companies.Microsoft import MicrosoftCrawler
 from jc_lib.companies.Apple import AppleCrawler
 from jc_lib.companies.Amazon import AmazonCrawler
+from jc_lib.companies.Netflix import NetflixCrawler
 from jc_lib.reporting import ReportItem
 
 
@@ -28,17 +29,19 @@ from jc_lib.reporting import ReportItem
 #
 # Signals completion to Consumers by sending None.
 def crawl_worker(input_queue, now_datestring, post_process_queue, output_queue):
+  options = webdriver.ChromeOptions()
+  driver = Chrome(options=options)
   while input_queue.qsize() > 0:
     crawl_instr = input_queue.get()
     crawler_constructor = crawl_instr[0]
     crawler_url = crawl_instr[1]
 
-    crawler = crawler_constructor(now_datestring, driver=None)
+    crawler = crawler_constructor(now_datestring, driver=driver)
     crawler.job_site_urls = [crawler_url]
 
     for item in crawler.crawl():
       if crawler.has_post_processing:
-        post_process_queue.put((item, crawler.post_process))
+        post_process_queue.put((item, crawler_constructor, now_datestring))
       else:
         output_queue.put(item)
   output_queue.put(None)
@@ -54,8 +57,10 @@ def post_process_worker(post_process_queue, output_queue):
     item = post_process_queue.get()
     if item == None: break
     report_item = item[0]
-    process_func = item[1]
-    output_queue.put(process_func(report_item, driver))
+    crawler_constructor = item[1]
+    now_datestring = item[2]
+    crawler = crawler_constructor(now_datestring, driver=driver)
+    output_queue.put(crawler.post_process(report_item, driver))
   output_queue.put(None)
 
 def schedule_crawling(CrawlerClass, schedule_queue):
@@ -67,6 +72,7 @@ if __name__ == "__main__":
   parser.add_argument('--debug', action=argparse.BooleanOptionalAction)
   parser.set_defaults(debug=False)
   parser.add_argument('--clear-cache', action=argparse.BooleanOptionalAction)
+  parser.add_argument('--output-dir', type=str, default="output/")
   parser.add_argument('--num-crawlers', type=int, default=7, help="The number of workers to commit to web crawling (min 1)")
   parser.add_argument('--num-item-processors', type=int, default=1, help="The number of workers to commit to processing items produced in crawling (min 1)")
   parser.set_defaults(clear_cache=True)
@@ -85,7 +91,7 @@ if __name__ == "__main__":
   print("NUM_ITEM_PROCESSORS {}".format(NUM_ITEM_PROCESSORS))
 
   print("Starting script...")
-  REPORTS_DIR = "output/"
+  REPORTS_DIR = args.output_dir
   FILE_NAME = REPORTS_DIR + "job-report_"
   now = datetime.datetime.now()
   now_datestring = now.strftime('%Y-%m-%d %H:%M')
@@ -123,17 +129,6 @@ if __name__ == "__main__":
   schedule_crawling(AmazonCrawler, unused_crawlers)
 
   ## Setup workers
-  """
-  crawler1 = Process(target=crawl_worker, args=(unused_crawlers,now_datestring,list_items_queue, output_queue))
-  crawler2 = Process(target=crawl_worker, args=(unused_crawlers,now_datestring,list_items_queue, output_queue))
-  post_processor = Process(target=post_process_worker, args=(list_items_queue, output_queue))
-
-  crawl_processes.append(crawler1)
-  crawl_processes.append(crawler2)
-
-  item_processes.append(post_processor)
-  """
-
   crawl_processes = []
   for i in range(NUM_CRAWLERS):
     p = Process(target=crawl_worker, args=(unused_crawlers,now_datestring,list_items_queue, output_queue))
@@ -144,22 +139,28 @@ if __name__ == "__main__":
     p = Process(target=post_process_worker, args=(list_items_queue, output_queue))
     item_processes.append(p)
     p.start()
-  processes = crawl_processes + item_processes
 
   ## Use blocking calls to extract items from the queue until every process has
   ## signalled its completion.
-
+  processes = crawl_processes + item_processes
   closed_workers = 0
   while closed_workers < len(processes): 
     item = output_queue.get()
     if item:
       jobs.append(item)
-    else:
+    if item is None:
       closed_workers = closed_workers + 1
+    if item is None and closed_workers <= len(crawl_processes):
+      # Generate a post-processor
+      p = Process(target=post_process_worker, args=(list_items_queue, output_queue))
+      p.start()
+      item_processes.append(p)
+      processes.append(p)
     ### We have to shut down post-processor after we're sure crawling is done
     if closed_workers >= len(crawl_processes) and list_items_queue.qsize() < 1:
       list_items_queue.put(None)
-  for p in processes:
+  print("Closing helper processes...")
+  for p in item_processes:
     p.join()
   
   # Output jobs reports
