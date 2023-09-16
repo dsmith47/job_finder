@@ -4,6 +4,7 @@ from jc_lib.companies.Google import GoogleCrawler
 from jc_lib.companies.Apple import AppleCrawler
 from jc_lib.companies.Microsoft import MicrosoftCrawler
 from jc_lib.companies.Amazon import AmazonCrawler
+from jc_lib.companies.Netflix import NetflixCrawler
 
 
 if __name__ == "__main__":
@@ -20,9 +21,12 @@ if __name__ == "__main__":
     crawler = MicrosoftCrawler(time)
   elif crawler_code == "Amazon":
     crawler = AmazonCrawler(time)
+  elif crawler_code == "Netflix":
+    crawler = NetflixCrawler(time)
 
   report_items = []
-  for i in crawler.extract_job_list_items(crawler.query_page(url.format(1))):
+  crawler.job_site_urls = [url]
+  for i in crawler.crawl():
     item = crawler.post_process(i, crawler.driver)
     print(str(item) + i.original_ad + "\n")
     report_items.append(item)

@@ -23,5 +23,5 @@ if __name__ == "__main__":
   driver.get(url)
   time.sleep(20)
   print(driver.find_element(By.XPATH, "*").get_attribute("innerHTML"))
-  input("Enter to try next driver...")
+  input("Enter to exit...")
 
