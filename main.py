@@ -38,7 +38,7 @@ def crawl_worker(input_queue, now_datestring, post_process_queue, output_queue):
 
     for item in crawler.crawl():
       if crawler.has_post_processing:
-        post_process_queue.put((item, crawler.post_process))
+        post_process_queue.put((item, crawler_constructor, now_datestring))
       else:
         output_queue.put(item)
   output_queue.put(None)
@@ -54,8 +54,10 @@ def post_process_worker(post_process_queue, output_queue):
     item = post_process_queue.get()
     if item == None: break
     report_item = item[0]
-    process_func = item[1]
-    output_queue.put(process_func(report_item, driver))
+    crawler_constructor = item[1]
+    now_datestring = item[2]
+    crawler = crawler_constructor(now_datestring, driver=driver)
+    output_queue.put(crawler.post_process(report_item, driver))
   output_queue.put(None)
 
 def schedule_crawling(CrawlerClass, schedule_queue):

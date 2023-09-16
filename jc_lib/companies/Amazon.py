@@ -14,7 +14,7 @@ class AmazonCrawler(SeleniumCrawler):
      "Amazon",
      "https://www.amazon.jobs/en/jobs/{}",
      AmazonCrawler.JOB_SITE_URLS,
-     has_post_processing=False,
+     has_post_processing=True,
      driver=driver)
 
   # Need to page on number of jobs, not pages
@@ -49,11 +49,14 @@ class AmazonCrawler(SeleniumCrawler):
   # to require selenium (and therefore is very slow). Improving the content
   # requires faster loading.
   #
-  def post_process(self, report_item):
+  def post_process(self, report_item, driver=None):
+    print("POST-PROCESSING: {}".format(report_item.url))
     bs_obj = self.query_page(report_item.url)
-    text_nodes = bs_obj.find_all(id="job-detail-body")
+    #text_nodes = bs_obj.find_all(id="job-detail-body")
+    text_nodes = bs_obj.find_all(text=True)
     i = 0
-    while len(text_nodes[i].strip()) < 1: i = i + 1
-    report_item.original_ad = ''.join(text_nodes)
+    while i < len(text_nodes) and len(text_nodes[i].strip()) < 1: i = i + 1
+    if i >= len(text_nodes): i = 0
+    report_item.original_ad = ''.join(text_nodes[i:])
     return report_item
 
