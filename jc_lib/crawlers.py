@@ -158,7 +158,8 @@ class SeleniumCrawler(Crawler):
     while len(new_postings) > 0:
       i = i + 1
       print("Scraping {}".format(url.format(i)))
-      new_postings = self.extract_job_list_items(url.format(i))
+      bs_obj = self.query_page(url.format(i))
+      new_postings = self.extract_job_list_items(bs_obj)
       postings = postings + new_postings
     return postings
 
