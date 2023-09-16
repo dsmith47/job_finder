@@ -69,6 +69,7 @@ if __name__ == "__main__":
   parser.add_argument('--debug', action=argparse.BooleanOptionalAction)
   parser.set_defaults(debug=False)
   parser.add_argument('--clear-cache', action=argparse.BooleanOptionalAction)
+  parser.add_argument('--output-dir', type=str, defaulti="output/")
   parser.add_argument('--num-crawlers', type=int, default=7, help="The number of workers to commit to web crawling (min 1)")
   parser.add_argument('--num-item-processors', type=int, default=1, help="The number of workers to commit to processing items produced in crawling (min 1)")
   parser.set_defaults(clear_cache=True)
@@ -87,7 +88,7 @@ if __name__ == "__main__":
   print("NUM_ITEM_PROCESSORS {}".format(NUM_ITEM_PROCESSORS))
 
   print("Starting script...")
-  REPORTS_DIR = "output/"
+  REPORTS_DIR = args.output_dir
   FILE_NAME = REPORTS_DIR + "job-report_"
   now = datetime.datetime.now()
   now_datestring = now.strftime('%Y-%m-%d %H:%M')
