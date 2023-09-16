@@ -31,10 +31,8 @@ class AmazonCrawler(SeleniumCrawler):
       postings = postings + new_postings
     return postings
 
-  def extract_job_list_items(self, url):
+  def extract_job_list_items(self, bs_obj):
     report_items = []
-    # Access the page to parse
-    bs_obj = self.query_page(url)
     job_posts = bs_obj.find_all(class_="job")
     for l in job_posts:
       al = l.find(lambda tag: tag.name =="div" and "aria-label" in tag.attrs)
@@ -45,10 +43,7 @@ class AmazonCrawler(SeleniumCrawler):
       original_ad = '\n'.join(text_nodes)
       report_items.append(self.make_report_item(job_title, original_ad, job_url))
     return report_items
-  # TODO: the job ad is pretty thin on its own, but accessing these pages seems
-  # to require selenium (and therefore is very slow). Improving the content
-  # requires faster loading.
-  #
+
   def post_process(self, report_item, driver=None):
     print("POST-PROCESSING: {}".format(report_item.url))
     bs_obj = self.query_page(report_item.url)

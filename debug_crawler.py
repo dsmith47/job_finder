@@ -22,7 +22,7 @@ if __name__ == "__main__":
     crawler = AmazonCrawler(time)
 
   report_items = []
-  for i in crawler.extract_job_list_items(url):
+  for i in crawler.extract_job_list_items(crawler.query_page(url.format(1))):
     item = crawler.post_process(i, crawler.driver)
     print(str(item) + i.original_ad + "\n")
     report_items.append(item)

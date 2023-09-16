@@ -17,10 +17,8 @@ class MicrosoftCrawler(SeleniumCrawler):
      has_post_processing=True,
      driver=driver)
 
-  def extract_job_list_items(self, url):
+  def extract_job_list_items(self, bs_obj):
     report_items = []
-    # Access the page to parse
-    bs_obj = self.query_page(url)
     job_posts = bs_obj.find_all(class_="ms-List-cell")
     for l in job_posts:
       al = l.find(lambda tag: tag.name =="div" and "aria-label" in tag.attrs)
