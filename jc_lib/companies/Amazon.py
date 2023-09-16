@@ -52,11 +52,13 @@ class AmazonCrawler(SeleniumCrawler):
   def post_process(self, report_item, driver=None):
     print("POST-PROCESSING: {}".format(report_item.url))
     bs_obj = self.query_page(report_item.url)
-    #text_nodes = bs_obj.find_all(id="job-detail-body")
-    text_nodes = bs_obj.find_all(text=True)
+    text_nodes = bs_obj.find_all(id="job-detail-body")
+    #text_nodes = bs_obj.find_all(text=True)
+    text_items = [i.get_text() for i in bs_obj.findAll(text=True)]
+    text_items = [i.get_text() for i in bs_obj.find_all(id="job-detail-body")]
     i = 0
-    while i < len(text_nodes) and len(text_nodes[i].strip()) < 1: i = i + 1
-    if i >= len(text_nodes): i = 0
-    report_item.original_ad = ''.join(text_nodes[i:])
+    while i < len(text_items) and len(text_items[i].strip()) < 1: i = i + 1
+    if i >= len(text_items): i = 0
+    report_item.original_ad = ''.join(text_items[i:])
     return report_item
 

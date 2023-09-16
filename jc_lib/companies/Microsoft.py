@@ -39,7 +39,7 @@ class MicrosoftCrawler(SeleniumCrawler):
   def post_process(self, report_item, driver):
     print("POST-PROCESSING: {}".format(report_item.url))
     bs_obj = self.query_page(report_item.url)
-    text_items = [i.get_text() for i in bs_obj.findAll(text=True    )]
+    text_items = [i.get_text() for i in bs_obj.findAll(text=True)]
     i = 0
     j = len(text_items) - 1
     while i < len(text_items) and text_items[i] != "Overview": i = i + 1
