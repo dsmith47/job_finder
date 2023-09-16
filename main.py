@@ -126,17 +126,6 @@ if __name__ == "__main__":
   schedule_crawling(AmazonCrawler, unused_crawlers)
 
   ## Setup workers
-  """
-  crawler1 = Process(target=crawl_worker, args=(unused_crawlers,now_datestring,list_items_queue, output_queue))
-  crawler2 = Process(target=crawl_worker, args=(unused_crawlers,now_datestring,list_items_queue, output_queue))
-  post_processor = Process(target=post_process_worker, args=(list_items_queue, output_queue))
-
-  crawl_processes.append(crawler1)
-  crawl_processes.append(crawler2)
-
-  item_processes.append(post_processor)
-  """
-
   crawl_processes = []
   for i in range(NUM_CRAWLERS):
     p = Process(target=crawl_worker, args=(unused_crawlers,now_datestring,list_items_queue, output_queue))
@@ -147,22 +136,28 @@ if __name__ == "__main__":
     p = Process(target=post_process_worker, args=(list_items_queue, output_queue))
     item_processes.append(p)
     p.start()
-  processes = crawl_processes + item_processes
 
   ## Use blocking calls to extract items from the queue until every process has
   ## signalled its completion.
-
+  processes = crawl_processes + item_processes
   closed_workers = 0
   while closed_workers < len(processes): 
     item = output_queue.get()
     if item:
       jobs.append(item)
-    else:
+    if item is None:
       closed_workers = closed_workers + 1
+    if item is None and closed_workers <= len(crawl_processes):
+      # Generate a post-processor
+      p = Process(target=post_process_worker, args=(list_items_queue, output_queue))
+      p.start()
+      item_processes.append(p)
+      processes.append(p)
     ### We have to shut down post-processor after we're sure crawling is done
     if closed_workers >= len(crawl_processes) and list_items_queue.qsize() < 1:
       list_items_queue.put(None)
-  for p in processes:
+  print("Closing helper processes...")
+  for p in item_processes:
     p.join()
   
   # Output jobs reports
