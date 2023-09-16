@@ -24,7 +24,7 @@ if __name__ == "__main__":
   report_items = []
   for i in crawler.extract_job_list_items(url):
     item = crawler.post_process(i, crawler.driver)
-    print(item)
+    print(str(item) + i.original_ad + "\n")
     report_items.append(item)
   for i in report_items:
     print(str(i) + i.original_ad + "\n")
