@@ -28,12 +28,14 @@ from jc_lib.reporting import ReportItem
 #
 # Signals completion to Consumers by sending None.
 def crawl_worker(input_queue, now_datestring, post_process_queue, output_queue):
+  options = webdriver.ChromeOptions()
+  driver = Chrome(options=options)
   while input_queue.qsize() > 0:
     crawl_instr = input_queue.get()
     crawler_constructor = crawl_instr[0]
     crawler_url = crawl_instr[1]
 
-    crawler = crawler_constructor(now_datestring, driver=None)
+    crawler = crawler_constructor(now_datestring, driver=driver)
     crawler.job_site_urls = [crawler_url]
 
     for item in crawler.crawl():
