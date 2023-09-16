@@ -19,6 +19,7 @@ from jc_lib.companies.Google import GoogleCrawler
 from jc_lib.companies.Microsoft import MicrosoftCrawler
 from jc_lib.companies.Apple import AppleCrawler
 from jc_lib.companies.Amazon import AmazonCrawler
+from jc_lib.companies.Netflix import NetflixCrawler
 from jc_lib.reporting import ReportItem
 
 
