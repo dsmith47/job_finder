@@ -6,6 +6,7 @@ from jc_lib.companies.Microsoft import MicrosoftCrawler
 from jc_lib.companies.Amazon import AmazonCrawler
 from jc_lib.companies.Netflix import NetflixCrawler
 from jc_lib.companies.Adobe import AdobeCrawler
+from jc_lib.companies.Meta import MetaCrawler
 
 
 if __name__ == "__main__":
@@ -25,6 +26,8 @@ if __name__ == "__main__":
     crawler = NetflixCrawler(time)
   elif crawler_code == "Adobe":
     crawler = AdobeCrawler(time)
+  elif crawler_code == "Meta":
+    crawler = MetaCrawler(time)
 
   report_items = []
   if len(sys.argv) > 2:
