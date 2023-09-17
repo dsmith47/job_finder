@@ -26,6 +26,12 @@ class MetaCrawler(SeleniumCrawler):
   def crawl_page(self, url):
     print("Scraping {}".format(url))
     self.driver.get(url)
+    # If the page blocks us early, we have to give up
+    try:
+      nli_element = WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.XPATH, "//*[text()='Not Logged In']")))
+      return []
+    except:
+      pass
     # TODO: web pag throttles on too many visits, need to gracefully hanlde the not logged in page
     self.load_all_jobs()
     tabIndex = 0 
