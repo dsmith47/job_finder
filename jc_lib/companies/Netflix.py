@@ -4,12 +4,13 @@ from jc_lib.reporting import ReportItem
 from selenium.webdriver.common.by import By
 
 class NetflixCrawler(SeleniumCrawler):
+  COMPANY_NAME = "Netflix"
   JOB_SITE_URLS = [ # Remote+NY jobs
       "https://jobs.netflix.com/search?page={}&location=New%20York%2C%20New%20York~Remote%2C%20United%20States"]
 
   def __init__(self, present_time, driver=None):
     super().__init__(present_time,
-     "Netflix",
+     NetflixCrawler.COMPANY_NAME,
      "https://jobs.netflix.com",
      NetflixCrawler.JOB_SITE_URLS,
      has_post_processing=True,

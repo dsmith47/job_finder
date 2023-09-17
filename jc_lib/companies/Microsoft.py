@@ -4,6 +4,7 @@ from jc_lib.reporting import ReportItem
 from selenium.webdriver.common.by import By
 
 class MicrosoftCrawler(SeleniumCrawler):
+  COMPANY_NAME = "Microsoft"
   JOB_SITE_URLS = [ # Remote jobs
       "https://jobs.careers.microsoft.com/global/en/search?q=Software%20engineer&lc=United%20States&p=Software%20Engineering&exp=Experienced%20professionals&rt=Individual%20Contributor&ws=Up%20to%20100%25%20work%20from%20home&l=en_us&pg={}&pgSz=20&o=Recent&flt=true",
       # NY Jobs
@@ -11,7 +12,7 @@ class MicrosoftCrawler(SeleniumCrawler):
 
   def __init__(self, present_time, driver=None):
     super().__init__(present_time,
-     "Microsoft",
+     MicrosoftCrawler.COMPANY_NAME,
      "https://jobs.careers.microsoft.com/global/en/job/{}",
      MicrosoftCrawler.JOB_SITE_URLS,
      has_post_processing=True,

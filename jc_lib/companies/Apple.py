@@ -4,12 +4,13 @@ from jc_lib.crawlers import SoupCrawler
 
 
 class AppleCrawler(SoupCrawler):
+  COMPANY_NAME = "Apple"
   JOB_SITE_URLS = [ # NY Jobs
      "https://jobs.apple.com/en-us/search?search=software%20engineer&sort=newest&location=new-york-state985&page={}"]
 
   def __init__(self, present_time, driver=None):
     super().__init__(present_time,
-     "Apple",
+     AppleCrawler.COMPANY_NAME,
      "https://jobs.apple.com",
      AppleCrawler.JOB_SITE_URLS,
      True,

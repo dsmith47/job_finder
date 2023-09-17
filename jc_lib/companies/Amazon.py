@@ -4,6 +4,7 @@ from jc_lib.reporting import ReportItem
 from selenium.webdriver.common.by import By
 
 class AmazonCrawler(SeleniumCrawler):
+  COMPANY_NAME = "Amazon"
   JOB_SITE_URLS = [ # Remote jobs
       "https://www.amazon.jobs/en/locations/virtual-locations?offset={}&result_limit=10&sort=recent&category%5B%5D=software-development&category%5B%5D=solutions-architect&category%5B%5D=operations-it-support-engineering&category%5B%5D=systems-quality-security-engineering&category%5B%5D=database-administration&category%5B%5D=business-intelligence&category%5B%5D=research-science&category%5B%5D=fulfillment-operations-management&category%5B%5D=business-merchant-development&category%5B%5D=machine-learning-science&category%5B%5D=data-science&country%5B%5D=USA&distanceType=Mi&radius=24km&latitude=&longitude=&loc_group_id=&loc_query=&base_query=&city=&country=&region=&county=&query_options=&",
       # NY Jobs
@@ -11,7 +12,7 @@ class AmazonCrawler(SeleniumCrawler):
 
   def __init__(self, present_time, driver=None):
     super().__init__(present_time,
-     "Amazon",
+     AmazonCrawler.COMPANY_NAME,
      "https://www.amazon.jobs/en/jobs/{}",
      AmazonCrawler.JOB_SITE_URLS,
      has_post_processing=True,

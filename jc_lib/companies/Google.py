@@ -1,6 +1,7 @@
 from jc_lib.crawlers import SoupCrawler
 
 class GoogleCrawler(SoupCrawler):
+  COMPANY_NAME = "Google"
   JOB_SITE_URLS = [# Remote jobs
       "https://www.google.com/about/careers/applications/jobs/results/?degree=BACHELORS&q=Software%20Engineer&employment_type=FULL_TIME&sort_by=date&has_remote=true&target_level=EARLY&target_level=MID&page={}",
       # NY Jobs
@@ -8,7 +9,7 @@ class GoogleCrawler(SoupCrawler):
 
   def __init__(self, present_time, driver=None):
     super().__init__(present_time,
-     "Google",
+     GoogleCrawler.COMPANY_NAME,
      "https://www.google.com/about/careers/applications/",
      GoogleCrawler.JOB_SITE_URLS,
      True,

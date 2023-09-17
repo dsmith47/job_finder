@@ -14,14 +14,7 @@ from multiprocessing import set_start_method
 from selenium import webdriver
 from selenium.webdriver import Chrome
 
-from jc_lib.alerting import Alerts
-from jc_lib.companies.Google import GoogleCrawler
-from jc_lib.companies.Microsoft import MicrosoftCrawler
-from jc_lib.companies.Apple import AppleCrawler
-from jc_lib.companies.Amazon import AmazonCrawler
-from jc_lib.companies.Netflix import NetflixCrawler
-from jc_lib.reporting import ReportItem
-
+from jc_lib.companies import ALL_CRAWLERS
 
 # Primary web crawler.
 # Takes a url, pages through any subsequent pages, and outputs any job items 
@@ -119,15 +112,9 @@ if __name__ == "__main__":
   output_queue = Queue()
 
   ## Enqueue initial crawlers
-  alerts.register_company("Google")
-  schedule_crawling(GoogleCrawler, unused_crawlers)
-  alerts.register_company("Microsoft")
-  schedule_crawling(MicrosoftCrawler, unused_crawlers)
-  alerts.register_company("Apple")
-  schedule_crawling(AppleCrawler, unused_crawlers)
-  alerts.register_company("Amazon")
-  schedule_crawling(AmazonCrawler, unused_crawlers)
-
+  for CrawlerClass in ALL_CRAWLERS:
+    alerts.register_company(CrawlerClass.COMPANY_NAME)
+    schedule_crawling(CrawlerClass, unused_crawlers)
   ## Setup workers
   crawl_processes = []
   for i in range(NUM_CRAWLERS):
