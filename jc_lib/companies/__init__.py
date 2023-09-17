@@ -3,6 +3,7 @@ from .Microsoft import MicrosoftCrawler
 from .Apple import AppleCrawler
 from .Amazon import AmazonCrawler
 from .Netflix import NetflixCrawler
+from .Adobe import AdobeCrawler
 
 # Returns every crawler class in the package (economizing imports)
 ALL_CRAWLERS = [
@@ -10,5 +11,6 @@ ALL_CRAWLERS = [
   MicrosoftCrawler,
   AppleCrawler,
   AmazonCrawler,
-  NetflixCrawler
+  NetflixCrawler,
+  AdobeCrawler
 ]

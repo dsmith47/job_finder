@@ -35,6 +35,7 @@ class Crawler():
     print("Crawling for {}...".format(self.company_name))
     new_jobs = []
     for url in self.job_site_urls:
+      print("Crawl {} at {}".format(self.company_name, url))
       new_jobs = new_jobs + self.crawl_page(url)
     return [j for j in new_jobs if j is not None]
 

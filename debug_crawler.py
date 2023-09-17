@@ -5,11 +5,11 @@ from jc_lib.companies.Apple import AppleCrawler
 from jc_lib.companies.Microsoft import MicrosoftCrawler
 from jc_lib.companies.Amazon import AmazonCrawler
 from jc_lib.companies.Netflix import NetflixCrawler
+from jc_lib.companies.Adobe import AdobeCrawler
 
 
 if __name__ == "__main__":
   crawler_code = sys.argv[1]
-  url = sys.argv[2]
 
   crawler = None
   time = "time placeholder"
@@ -23,9 +23,13 @@ if __name__ == "__main__":
     crawler = AmazonCrawler(time)
   elif crawler_code == "Netflix":
     crawler = NetflixCrawler(time)
+  elif crawler_code == "Adobe":
+    crawler = AdobeCrawler(time)
 
   report_items = []
-  crawler.job_site_urls = [url]
+  if len(sys.argv) > 2:
+    crawler.job_site_urls = [sys.argv[2]]
+
   for i in crawler.crawl():
     item = crawler.post_process(i, crawler.driver)
     print(str(item) + i.original_ad + "\n")
