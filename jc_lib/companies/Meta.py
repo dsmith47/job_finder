@@ -43,7 +43,6 @@ class MetaCrawler(SeleniumCrawler):
         time.sleep(5)
         self.driver.switch_to.window(self.driver.window_handles[1])
         # Get content from the job ad
-        #text_items = [i.get_text() for i in self.driver.find_all(text=True)]
         try:
           text_items = [i.text for i in self.driver.find_elements(By.XPATH, ".//*")]
         except StaleElementReferenceException:
