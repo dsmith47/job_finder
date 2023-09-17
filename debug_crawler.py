@@ -5,6 +5,7 @@ from jc_lib.companies.Apple import AppleCrawler
 from jc_lib.companies.Microsoft import MicrosoftCrawler
 from jc_lib.companies.Amazon import AmazonCrawler
 from jc_lib.companies.Netflix import NetflixCrawler
+from jc_lib.companies.Meta import MetaCrawler
 
 
 if __name__ == "__main__":
@@ -23,6 +24,8 @@ if __name__ == "__main__":
     crawler = AmazonCrawler(time)
   elif crawler_code == "Netflix":
     crawler = NetflixCrawler(time)
+  elif crawler_code == "Meta":
+    crawler = MetaCrawler(time)
 
   report_items = []
   crawler.job_site_urls = [url]

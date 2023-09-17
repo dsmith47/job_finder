@@ -169,6 +169,6 @@ class SeleniumCrawler(Crawler):
     if delay is None or delay_time < 1:
       time.sleep(30)
     else:
-      WebDriverWait(SeleniumCrawler.driver, delay_time).until(delay)
+      WebDriverWait(self.driver, delay_time).until(delay)
     return BeautifulSoup(self.driver.find_element(By.XPATH, "*").get_attribute('outerHTML'), "html.parser")
 
