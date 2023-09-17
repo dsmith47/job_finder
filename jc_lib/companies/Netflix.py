@@ -34,7 +34,6 @@ class NetflixCrawler(SeleniumCrawler):
     print("POST-PROCESSING: {}".format(report_item.url))
     bs_obj = self.query_page(report_item.url)
     text_nodes = [i.get_text() for i in bs_obj.findAll(text=True)]
-    print(text_nodes)
     i = 0
     # The job title appears twice, as a title then again as a content header
     while i < len(text_nodes) and text_nodes[i].find(report_item.job_title) == -1: i += 1
