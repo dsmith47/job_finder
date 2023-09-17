@@ -15,6 +15,8 @@ from selenium import webdriver
 from selenium.webdriver import Chrome
 
 from jc_lib.companies import ALL_CRAWLERS
+from jc_lib.alerting import Alerts
+from jc_lib.reporting import ReportItem
 
 # Primary web crawler.
 # Takes a url, pages through any subsequent pages, and outputs any job items 
@@ -60,15 +62,20 @@ def schedule_crawling(CrawlerClass, schedule_queue):
   for url in CrawlerClass.JOB_SITE_URLS:
     schedule_queue.put((CrawlerClass, url))
 
+def list_of_strings(arg_string):
+  return arg_string.split(',')
+
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('--debug', action=argparse.BooleanOptionalAction)
   parser.set_defaults(debug=False)
   parser.add_argument('--clear-cache', action=argparse.BooleanOptionalAction)
+  parser.set_defaults(clear_cache=True)
   parser.add_argument('--output-dir', type=str, default="output/")
   parser.add_argument('--num-crawlers', type=int, default=7, help="The number of workers to commit to web crawling (min 1)")
   parser.add_argument('--num-item-processors', type=int, default=1, help="The number of workers to commit to processing items produced in crawling (min 1)")
-  parser.set_defaults(clear_cache=True)
+  parser.add_argument('--use-crawlers', type=list_of_strings, default="")
+  parser.add_argument('--exclude-crawlers', type=list_of_strings, default="")
 
   args = parser.parse_args()
   NUM_CRAWLERS = 1
@@ -112,7 +119,13 @@ if __name__ == "__main__":
   output_queue = Queue()
 
   ## Enqueue initial crawlers
+  staged_crawlers = args.use_crawlers
+  if len(staged_crawlers) < 2 and len(staged_crawlers[0]) < 1:
+    staged_crawlers = [c.COMPANY_NAME for c in ALL_CRAWLERS]
+  staged_crawlers = [c_name for c_name in staged_crawlers if c_name not in args.exclude_crawlers]
+  print("Executing on crawlers: {}".format(' '.join(staged_crawlers)))
   for CrawlerClass in ALL_CRAWLERS:
+    if CrawlerClass.COMPANY_NAME not in staged_crawlers: continue
     alerts.register_company(CrawlerClass.COMPANY_NAME)
     schedule_crawling(CrawlerClass, unused_crawlers)
   ## Setup workers
@@ -164,8 +177,10 @@ if __name__ == "__main__":
         all_jobs[job.url].date_applied = job.date_applied
       all_jobs[job.url].date_accessed = max(all_jobs[job.url].date_created, job.date_created)
       all_jobs[job.url].date_checked = max(all_jobs[job.url].date_created, job.date_created)
-      if all_jobs[job.url].original_ad != job.original_ad or (len(all_jobs[job.url].updated_ads)>0 and all_jobs[job.url].updated_ads[-1] != job.original_ad):
-        all_jobs[job.url].updated_ads.append("["+job.date_created+"]\n"+job.original_ad)
+      if all_jobs[job.url].original_ad != job.original_ad \
+       or (len(all_jobs[job.url].updated_ads)>0 \
+           and all_jobs[job.url].updated_ads[-1] != job.original_ad + "\n["+job.date_created+"]\n"):
+        all_jobs[job.url].updated_ads.append(job.original_ad + "\n["+job.date_created+"]\n")
   ## Write output
   for job in all_jobs.values():
     print(job)
