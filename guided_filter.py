@@ -10,6 +10,15 @@ def extract_ad_text(report_item):
     test_text = report_item.updated_ads[-1]
   return test_text
 
+def test_job_title(report_item):
+  test_text = report_item.job_title
+  if "Principle" in test_text: return test_text
+  if "Principal" in test_text: return test_text
+  if "Distinguished" in test_text: return test_text
+  if "Artist" in test_text: return test_text
+  if "Manager" in test_text: return test_text
+  return False
+
 def test_6years_experience(report_item):
   test_text = extract_ad_text(report_item)
   years_asked = re.findall(r'((\d)\++ years of [a-zA-Z ]*)', test_text, re.IGNORECASE)
@@ -31,6 +40,11 @@ def ask_ignore_item(report_item, test_string):
 
 def inspect(report_item):
   if report_item.is_ignored: return
+
+  test_result = test_job_title(report_item)
+  if test_result:
+      ask_ignore_item(report_item, "Title seems irrelevant: {}".format(test_result))
+
   test_result = test_6years_experience(report_item)
   if test_result:
       ask_ignore_item(report_item, "Job seems to require >6y experience.: {}".format(test_result))
