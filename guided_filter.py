@@ -42,6 +42,9 @@ def test_wrong_specialization(report_item):
   if "Embedded Device" in test_text: return output_text.format("Embedded Device")
   if "Embedded device" in test_text: return output_text.format("Embedded Device")
   if "embedded device" in test_text: return output_text.format("Embedded Device")
+  if "Embedded Software" in test_text: return output_text.format("Embedded Software")
+  if "Embedded software" in test_text: return output_text.format("Embedded Software")
+  if "embedded software" in test_text: return output_text.format("Embedded Software")
 
   return False
 
