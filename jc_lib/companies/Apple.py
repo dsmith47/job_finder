@@ -35,6 +35,6 @@ class AppleCrawler(SoupCrawler):
     text_nodes = [i.get_text() for i in bs_obj.findAll(text=True)]
     i = 0
     while i < len(text_nodes) and not text_nodes[i].strip().find(report_item.job_title) >= 0: i += 1
-    report_item.original_ad = ''.join(text_nodes[i+1:])
+    report_item.original_ad = ' '.join(text_nodes[i+1:])
     return report_item
 

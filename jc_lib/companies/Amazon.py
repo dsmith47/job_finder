@@ -53,6 +53,6 @@ class AmazonCrawler(SeleniumCrawler):
     i = 0
     while i < len(text_items) and len(text_items[i].strip()) < 1: i = i + 1
     if i >= len(text_items): i = 0
-    report_item.original_ad = ''.join(text_items[i:])
+    report_item.original_ad = ' '.join(text_items[i:])
     return report_item
 
