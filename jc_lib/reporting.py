@@ -16,7 +16,7 @@ class ReportItem:
       url = None,
       date_created = None,
       applied = None,
-      ignored = None,
+      ignored = False,
       last_access = None,
       last_check = None,
       original_ad = None):
@@ -26,7 +26,7 @@ class ReportItem:
     self.date_created = date_created
     # Populated outside of report, just pass through
     self.date_applied = applied
-    self.is_ignored = False
+    self.is_ignored = ignored 
     # Last time we were able to access this job
     self.date_accessed = last_access
     # Last time we tried to access this role, diverges from date_accessed when

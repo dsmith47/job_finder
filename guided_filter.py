@@ -102,7 +102,6 @@ if __name__ == "__main__":
   for row in file_reader:
     report_item = ReportItem.from_row(header, row)
     inspect(report_item)
-    print(report_item)
     output_writer.writerow(report_item.as_array())
 
   infile.close()
