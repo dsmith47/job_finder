@@ -100,8 +100,9 @@ if __name__ == "__main__":
   # Load previous jobs  
   all_jobs = dict()
   old_reports = os.listdir(REPORTS_DIR)
+  old_reports.sort()
   if len(old_reports) > 0:
-    report_file = open(REPORTS_DIR + old_reports[0], "r", newline='')
+    report_file = open(REPORTS_DIR + old_reports[-1], "r", newline='')
     file_reader = csv.reader(report_file)
     header = next(file_reader)
     for row in file_reader:
@@ -181,6 +182,7 @@ if __name__ == "__main__":
        or (len(all_jobs[job.url].updated_ads)>0 \
            and all_jobs[job.url].updated_ads[-1] != job.original_ad + "\n["+job.date_created+"]\n"):
         all_jobs[job.url].updated_ads.append(job.original_ad + "\n["+job.date_created+"]\n")
+
   ## Write output
   for job in all_jobs.values():
     print(job)
