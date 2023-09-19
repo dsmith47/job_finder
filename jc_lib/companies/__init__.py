@@ -12,5 +12,6 @@ ALL_CRAWLERS = [
   AppleCrawler,
   AmazonCrawler,
   NetflixCrawler,
+  MetaCrawler,
   AdobeCrawler
 ]
