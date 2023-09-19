@@ -12,12 +12,26 @@ def extract_ad_text(report_item):
 
 def test_job_title(report_item):
   test_text = report_item.job_title
+  # Eng roles, too high level
   if "Principle" in test_text: return test_text
   if "Principal" in test_text: return test_text
   if "Distinguished" in test_text: return test_text
-  if "Artist" in test_text: return test_text
-  if "Manager" in test_text: return test_text
+  # intern, part time and lower-level
   if "Intern" in test_text: return test_text
+  # Doctorate position, undercertified
+  if "PhD" in test_text: return test_text
+  if "PHD" in test_text: return test_text
+  # Management
+  if "Manager" in test_text: return test_text
+  if "Mgr" in test_text: return test_text
+  # Other Fields
+  if "Advocate" in test_text: return test_text
+  if "Artist" in test_text: return test_text
+  if "Lawyer" in test_text: return test_text
+  if "Legal" in test_text: return test_text
+  if "Product Design" in test_text: return test_text
+  if "Professional Learn" in test_text: return test_text
+  if "Research Scientist" in test_text: return test_text
   return False
 
 def test_6years_experience(report_item):
