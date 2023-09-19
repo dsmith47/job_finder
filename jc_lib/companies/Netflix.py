@@ -39,5 +39,6 @@ class NetflixCrawler(SeleniumCrawler):
     while i < len(text_nodes) and text_nodes[i].find(report_item.job_title) == -1: i += 1
     i += 1
     while i < len(text_nodes) and text_nodes[i].find(report_item.job_title) == -1: i += 1
-    report_item.original_ad = ' '.join(text_nodes[i+1:])
+    text_items = [t for t in text_nodes[i+1:] if not t.isspace()]
+    report_item.original_ad = '\n'.join(text_items)
     return report_item

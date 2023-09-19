@@ -53,6 +53,8 @@ class AmazonCrawler(SeleniumCrawler):
     i = 0
     while i < len(text_items) and len(text_items[i].strip()) < 1: i = i + 1
     if i >= len(text_items): i = 0
-    report_item.original_ad = ' '.join(text_items[i:])
+
+    output_items = [t for t in text_items[i:] if not t.isspace()]
+    report_item.original_ad = '\n'.join(output_items)
     return report_item
 

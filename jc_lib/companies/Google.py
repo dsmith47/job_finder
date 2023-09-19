@@ -34,6 +34,7 @@ class GoogleCrawler(SoupCrawler):
     i = 0
     while len(text_nodes[i].strip()) < 1: i = i + 1
     report_item.job_title = text_nodes[i]
-    report_item.original_ad = ' '.join(text_nodes[i+1:])
+    text_items = [t for t in text_nodes[i:] if not t.isspace()]
+    report_item.original_ad = '\n'.join(text_items)
     return report_item
 
