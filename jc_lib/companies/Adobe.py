@@ -72,7 +72,6 @@ class AdobeCrawler(SeleniumCrawler):
     j = i + 5
     while j < len(text_items) and text_items[j].find("Explore Location") == -1:
       j += 1
-    print("i={}, j={}".format(i,j))
     valid_text = [t for t in text_items[i:j] if not t.isspace()]
     report_item.original_ad = '\n'.join(valid_text).strip()
     return report_item
