@@ -52,7 +52,12 @@ def test_wrong_country(report_item):
   test_text = extract_ad_text(report_item)
   output_text = "Bad country - reference to {}."
 
-  if "Poland" in test_text: return output_text.format("Poland")
+  if "Canada" in test_text: return output_text.format("Canada (CA)")
+  if "CA" in test_text: return output_text.format("Canada (CA)")
+  if "United Kingdom" in test_text: return output_text.format("United Kingdom (UK)")
+  if "UK" in test_text: return output_text.format("United Kingdom (UK)")
+  if "Poland" in test_text: return output_text.format("Poland (PL)")
+  if "PL" in test_text: return output_text.format("Poland (PL)")
   if "India" in test_text: return output_text.format("India")
 
   return False
@@ -69,12 +74,6 @@ def ask_ignore_item(report_item, test_string):
  report_item.is_ignored = True
 
 def inspect(report_item):
-  """
-  if report_item.is_ignored: return
-  test_result = test_wrong_country(report_item)
-  if test_result:
-      ask_ignore_item(report_item, test_result)
-  """
   if report_item.is_ignored: return
   test_result = test_job_title(report_item)
   if test_result:
