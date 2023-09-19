@@ -44,5 +44,5 @@ class MicrosoftCrawler(SeleniumCrawler):
     while i < len(text_items) and text_items[i] != "Overview": i = i + 1
     if i == len(text_items): i = 0
     output_text_items = [t for t in text_items[i:] if len(t.strip()) >0]
-    report_item.original_ad = ' '.join(output_text_items)
+    report_item.original_ad = '\n'.join(output_text_items)
     return report_item
