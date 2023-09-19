@@ -41,9 +41,23 @@ class AdobeCrawler(SeleniumCrawler):
       job_url = None
 
       if not a['href'].startswith(self.url_root): continue
-
       job_title = a.get_text().strip()
       job_url = a['href']
+      parent_elem = a
+      parent_elem = parent_elem.parent
+      while 'class' not in parent_elem or 'information' not in parent_elem['class']:
+        parent_elem = parent_elem.parent
+        if 'information' not in parent_elem['class']: break
+      location_elems = parent_elem.find_all(class_="job-location")
+      location_elems = location_elems + parent_elem.find_all(class_="locatoin")
+      has_good_location = False
+      for e in location_elems:
+        location_string = e.text
+        if not "United States" in location_string: continue
+        if not "New York" or not "Remote" in location_string:
+          has_good_location = True
+          break
+      if not has_good_location: continue
 
       report_items.append(self.make_report_item(job_title, original_ad, job_url))
     return report_items
@@ -52,15 +66,14 @@ class AdobeCrawler(SeleniumCrawler):
     print("POST-PROCESSING: {}".format(report_item.url))
     bs_obj = self.query_page(report_item.url)
     text_items = [i.get_text() for i in bs_obj.findAll(text=True)]
-    print(text_items)
     i = 0
     while i < len(text_items) and text_items[i].find("JOB DESCRIPTION") == -1:
       i += 1
     j = i + 5
     while j < len(text_items) and text_items[j].find("Explore Location") == -1:
-        #if (text_items[j].isspace()): break
       j += 1
     print("i={}, j={}".format(i,j))
-    report_item.original_ad = '\n'.join(text_items[i:j]).strip()
+    valid_text = [t for t in text_items[i:j] if not t.isspace()]
+    report_item.original_ad = '\n'.join(valid_text).strip()
     return report_item
 
