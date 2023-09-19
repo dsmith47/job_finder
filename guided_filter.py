@@ -49,7 +49,22 @@ def test_wrong_specialization(report_item):
   # It's really only a meaningful find in the job title.
   if "security" in report_item.job_title: return output_text.format("Security")
   if "Security" in report_item.job_title: return output_text.format("Security")
+
+  if "IT" in test_text: return output_text.format("IT")
+
   if "iOS" in test_text: return output_text.format("iOS")
+  if "Swift" in test_text: return output_text.format("Swift")
+  if "swift" in test_text: return output_text.format("swift")
+
+  if "Copywrite" in test_text: return output_text.format("Copywrite")
+  if "copywrite" in test_text: return output_text.format("copywrite")
+  if "Copywriting" in test_text: return output_text.format("Copywriting")
+  if "copywriting" in test_text: return output_text.format("copywriting")
+
+  if "Windows Server" in test_text: return output_text.format("Windows Server")
+  if "Windows server" in test_text: return output_text.format("Windows server")
+  if "windows server" in test_text: return output_text.format("windows server")
+
   if "Embedded Systems" in test_text: return output_text.format("Embedded Systems")
   if "Embedded systems" in test_text: return output_text.format("Embedded Systems")
   if "embedded systems" in test_text: return output_text.format("Embedded Systems")
