@@ -8,6 +8,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import StaleElementReferenceException
 
 class MetaCrawler(SeleniumCrawler):
+  COMPANY_NAME = "Meta"
   JOB_SITE_URLS = [ # Remote jobs
       "https://www.metacareers.com/jobs/?q=software%20engineer&sort_by_new=true&leadership_levels[0]=Individual%20Contributor&is_remote_only=true",
       # NY Jobs
