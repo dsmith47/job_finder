@@ -91,6 +91,18 @@ def test_wrong_country(report_item):
 
   return False
 
+def test_unusual_ad_text(report_item):
+  test_text = extract_ad_text(report_item)
+  output_text = "Ad text seems unusual: contains {}."
+
+  if len(test_text) > 1: return output_text.format("nothing")
+  if "Job Not Found" in test_text: return output_text.format("'Job Not Found'")
+  if "Job not found" in test_text: return output_text.format("'Job Not Found'")
+  if "job not found" in test_text: return output_text.format("'Job Not Found'")
+  if "No Longer Accepting Applications" in test_text: return output_text.format("'No Longer Accepting Applications'")
+  if "No longer accepting applications" in test_text: return output_text.format("'No Longer Accepting Applications'")
+  if "no longer accepting applications" in test_text: return output_text.format("'No Longer Accepting Applications'")
+
 def ask_ignore_item(report_item, test_string):
  print(extract_ad_text(report_item))
  print(report_item)
@@ -107,6 +119,11 @@ def inspect(report_item):
   test_result = test_job_title(report_item)
   if test_result:
       ask_ignore_item(report_item, "Title seems irrelevant: {}".format(test_result))
+  
+  if report_item.is_ignored: return
+  test_result = test_unusual_ad_text(report_item)
+  if test_result:
+      ask_ignore_item(report_item, test_result)
 
   if report_item.is_ignored: return
   test_result = test_6years_experience(report_item)
