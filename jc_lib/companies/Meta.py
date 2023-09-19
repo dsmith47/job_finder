@@ -6,6 +6,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import StaleElementReferenceException
 
 class MetaCrawler(SeleniumCrawler):
   JOB_SITE_URLS = [ # Remote jobs
@@ -24,6 +25,7 @@ class MetaCrawler(SeleniumCrawler):
   # Need to page on number of jobs, not pages
   # Not a lot of metadata saved on pages, so crawl has to be highly interactive
   def crawl_page(self, url):
+    report_items = []
     print("Scraping {}".format(url))
     self.driver.get(url)
     # If the page blocks us early, we have to give up
@@ -32,7 +34,6 @@ class MetaCrawler(SeleniumCrawler):
       return []
     except:
       pass
-    # TODO: web pag throttles on too many visits, need to gracefully hanlde the not logged in page
     self.load_all_jobs()
     tabIndex = 0 
     while True:
@@ -42,29 +43,35 @@ class MetaCrawler(SeleniumCrawler):
         time.sleep(5)
         self.driver.switch_to.window(self.driver.window_handles[1])
         # Get content from the job ad
-        text_items = [i.get_text() for i in self.driver.find_all(text=True)]
-        print(text_items)
+        #text_items = [i.get_text() for i in self.driver.find_all(text=True)]
+        try:
+          text_items = [i.text for i in self.driver.find_elements(By.XPATH, ".//*")]
+        except StaleElementReferenceException:
+          time.sleep(1)
+          text_items = [i.text for i in self.driver.find_elements(By.XPATH, ".//*")]
+
+        page_text = text_items[0].split('\n')
+        if len(page_text) < 12: continue
+        job_title = page_text[7]
+        job_text = '\n'.join(page_text[11:])
+        job_url = self.driver.current_url
+        report_items.append(self.make_report_item(job_title, job_text, job_url))
         # close and return to the job list
         self.driver.close()
         self.driver.switch_to.window(self.driver.window_handles[0])
-        time.sleep(60000)
+        #time.sleep(60000)
       except NoSuchElementException:
         break
       tabIndex += 1
+      try:
+        # The actual clickable is the parent of the accessiblity text
+        button_element = self.driver.find_element(By.XPATH, "//span[@class='accessible_elem' and text()='Close']")
+        button_element = button_element.find_element(By.XPATH, "./..")
+      except NoSuchElementException:
+        button_element = None
+      if button_element: button_element.click()
 
-    time.sleep(6000)
-    """
-    web_object = self.query_page(url.format(i));
-    new_postings = self.extract_job_list_items(web_object)
-    postings = new_postings
-    while len(new_postings) > 0:
-      i = i + 10
-      print("Scraping {}".format(url.format(i)))
-      web_object = self.query_page(url.format(i));
-      new_postings = self.extract_job_list_items(web_object)
-      postings = postings + new_postings
-    return postings
-    """
+    return report_items
 
   # Click 'Load More' as many times as possile, revealing all ads
   def load_all_jobs(self):
@@ -75,19 +82,6 @@ class MetaCrawler(SeleniumCrawler):
         button_element = self.driver.find_element(By.XPATH, "//*[text()='Load more']")
       except NoSuchElementException:
         button_element = None
-
-  def extract_job_list_items(self, bs_obj):
-    report_items = []
-    job_posts = bs_obj.find_all(class_="job")
-    for l in job_posts:
-      al = l.find(lambda tag: tag.name =="div" and "aria-label" in tag.attrs)
-      job_number = l["data-job-id"]
-      job_url = self.url_root.format(job_number)
-      job_title = l.find(class_="job-title").get_text()
-      text_nodes = [i.get_text() for i in l.findAll(text=True)]
-      original_ad = '\n'.join(text_nodes)
-      report_items.append(self.make_report_item(job_title, original_ad, job_url))
-    return report_items
 
   # We needed to click each link to get the pages, so there's nothing to do
   # here
