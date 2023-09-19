@@ -54,6 +54,7 @@ class MetaCrawler(SeleniumCrawler):
         job_title = page_text[7]
         job_text = '\n'.join(page_text[11:])
         job_url = self.driver.current_url
+        print("PROCESSED: {}".format(job_url))
         report_items.append(self.make_report_item(job_title, job_text, job_url))
         # close and return to the job list
         self.driver.close()
