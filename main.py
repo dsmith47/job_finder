@@ -15,6 +15,8 @@ from selenium import webdriver
 from selenium.webdriver import Chrome
 
 from jc_lib.companies import ALL_CRAWLERS
+from jc_lib.companies import PARALLEL_CRAWLERS
+from jc_lib.companies import SERIAL_CRAWLERS
 from jc_lib.alerting import Alerts
 from jc_lib.reporting import ReportItem
 
@@ -132,10 +134,11 @@ if __name__ == "__main__":
     staged_crawlers = [c.COMPANY_NAME for c in ALL_CRAWLERS]
   staged_crawlers = [c_name for c_name in staged_crawlers if c_name not in args.exclude_crawlers]
   print("Executing on crawlers: {}".format(' '.join(staged_crawlers)))
-  for CrawlerClass in ALL_CRAWLERS:
+  for CrawlerClass in PARALLEL_CRAWLERS:
     if CrawlerClass.COMPANY_NAME not in staged_crawlers: continue
     alerts.register_company(CrawlerClass.COMPANY_NAME)
     schedule_crawling(CrawlerClass, unused_crawlers)
+
   ## Setup workers
   crawl_processes = []
   for i in range(NUM_CRAWLERS):
@@ -171,7 +174,13 @@ if __name__ == "__main__":
   print("Closing helper processes...")
   for p in item_processes:
     p.join()
-  
+ 
+  # Crawl the serialized processes
+  for CrawlerClass in SERIAL_CRAWLERS:
+    if CrawlerClass.COMPANY_NAME not in staged_crawlers: continue
+    crawler = CrawlerClass(now_datestring)
+    jobs = jobs + crawler.crawl()
+
   # Output jobs reports
   print("Generating report...")
   ## Match jobs to already-known jobs

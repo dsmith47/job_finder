@@ -6,13 +6,21 @@ from .Netflix import NetflixCrawler
 from .Meta import MetaCrawler
 from .Adobe import AdobeCrawler
 
-# Returns every crawler class in the package (economizing imports)
-ALL_CRAWLERS = [
+# Crawlers that can be run in parallel
+PARALLEL_CRAWLERS = [
   GoogleCrawler,
   MicrosoftCrawler,
   AppleCrawler,
   AmazonCrawler,
   NetflixCrawler,
-  MetaCrawler,
   AdobeCrawler
 ]
+
+# Crawlers that can't run alongside any others 
+# currently all of them need the chromium driver focused on them to work
+SERIAL_CRAWLERS = [
+  MetaCrawler
+]
+
+# Returns every crawler class in the package (economizing imports)
+ALL_CRAWLERS = PARALLEL_CRAWLERS + SERIAL_CRAWLERS
