@@ -18,6 +18,7 @@ def test_job_title(report_item):
   if "Distinguished" in test_text: return test_text
   # intern, part time and lower-level
   if "Intern" in test_text: return test_text
+  if "University Graduate" in test_text: return test_text
   # Doctorate position, undercertified
   if "PhD" in test_text: return test_text
   if "PHD" in test_text: return test_text
