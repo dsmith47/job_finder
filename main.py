@@ -27,18 +27,22 @@ def crawl_worker(input_queue, now_datestring, post_process_queue, output_queue):
   options = webdriver.ChromeOptions()
   driver = Chrome(options=options)
   while input_queue.qsize() > 0:
-    crawl_instr = input_queue.get()
-    crawler_constructor = crawl_instr[0]
-    crawler_url = crawl_instr[1]
+    try:
+      crawl_instr = input_queue.get()
+      crawler_constructor = crawl_instr[0]
+      crawler_url = crawl_instr[1]
 
-    crawler = crawler_constructor(now_datestring, driver=driver)
-    crawler.job_site_urls = [crawler_url]
+      crawler = crawler_constructor(now_datestring, driver=driver)
+      crawler.job_site_urls = [crawler_url]
 
-    for item in crawler.crawl():
-      if crawler.has_post_processing:
-        post_process_queue.put((item, crawler_constructor, now_datestring))
-      else:
-        output_queue.put(item)
+      for item in crawler.crawl():
+        if crawler.has_post_processing:
+          post_process_queue.put((item, crawler_constructor, now_datestring))
+        else:
+          output_queue.put(item)
+    except:
+      print("CRAWL ERROR\nError in crawling {}\nOn {}"
+              .format(crawler_constructor.COMPANY_NAME, crawler_url))
   output_queue.put(None)
 
 # Side process for crawlers that need their job items post-processed.
@@ -49,13 +53,16 @@ def post_process_worker(post_process_queue, output_queue):
   options = webdriver.ChromeOptions()
   driver = Chrome(options=options)
   while True:
-    item = post_process_queue.get()
-    if item == None: break
-    report_item = item[0]
-    crawler_constructor = item[1]
-    now_datestring = item[2]
-    crawler = crawler_constructor(now_datestring, driver=driver)
-    output_queue.put(crawler.post_process(report_item, driver))
+    try:
+      item = post_process_queue.get()
+      if item == None: break
+      report_item = item[0]
+      crawler_constructor = item[1]
+      now_datestring = item[2]
+      crawler = crawler_constructor(now_datestring, driver=driver)
+      output_queue.put(crawler.post_process(report_item, driver))
+    except:
+      print("POST-PROCESS ERROR for item\n{}".format(item))
   output_queue.put(None)
 
 def schedule_crawling(CrawlerClass, schedule_queue):
@@ -157,7 +164,8 @@ if __name__ == "__main__":
       p.start()
       item_processes.append(p)
       processes.append(p)
-    ### We have to shut down post-processor after we're sure crawling is done
+    ### We have to shut down post-processor after we're sure crawling is done,
+    ### otherwise we wont have a complete output.
     if closed_workers >= len(crawl_processes) and list_items_queue.qsize() < 1:
       list_items_queue.put(None)
   print("Closing helper processes...")
