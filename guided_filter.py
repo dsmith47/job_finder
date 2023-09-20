@@ -95,7 +95,7 @@ def test_unusual_ad_text(report_item):
   test_text = extract_ad_text(report_item)
   output_text = "Ad text seems unusual: contains {}."
 
-  if len(test_text) > 1: return output_text.format("nothing")
+  if len(test_text) < 1: return output_text.format("nothing")
   if "Job Not Found" in test_text: return output_text.format("'Job Not Found'")
   if "Job not found" in test_text: return output_text.format("'Job Not Found'")
   if "job not found" in test_text: return output_text.format("'Job Not Found'")
