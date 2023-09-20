@@ -50,7 +50,9 @@ class MetaCrawler(SeleniumCrawler):
           text_items = [i.text for i in self.driver.find_elements(By.XPATH, ".//*")]
 
         page_text = text_items[0].split('\n')
-        if len(page_text) < 12: continue
+        if len(page_text) < 12:
+          print("DEBUG EVENT: Meta unparsable text: {}".format(text_items))
+          continue
         job_title = page_text[7]
         job_text = '\n'.join(page_text[11:])
         job_url = self.driver.current_url
