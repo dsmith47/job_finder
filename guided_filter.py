@@ -53,7 +53,7 @@ def test_wrong_specialization(report_item):
 
   if "IT" in report_item.job_title: return output_text.format("IT")
 
-  if "iOS" in test_text: return output_text.format("iOS")
+  if "iOS" in report_item.job_title: return output_text.format("iOS")
   if "Swift" in test_text: return output_text.format("Swift")
   if "swift" in test_text: return output_text.format("swift")
 
