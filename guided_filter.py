@@ -20,9 +20,12 @@ def ask_ignore_item(report_item, test_string):
  command = None
  while command != "y" and command != "n":
    command = input("Ignore Job (y/n)? ")
- if command == "n": return False
- report_item.is_ignored = True
- return True
+ return_code = False
+ if command == "y":
+   report_item.is_ignored = True
+   return_code = True
+ print("#################### INPUT BREAK ############################")
+ return return_code
 
 # Checks the title for terms that imply low-utility
 def test_job_title(report_item, ignore_item_ui_fn):
