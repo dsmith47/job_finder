@@ -4,137 +4,135 @@ import sys
 
 from jc_lib.reporting import ReportItem
 
+# Turn a report item into the most-recently-available posting text
 def extract_ad_text(report_item):
   test_text = report_item.original_ad
   if len(report_item.updated_ads) > 0:
     test_text = report_item.updated_ads[-1]
   return test_text
 
-def test_job_title(report_item):
-  test_text = report_item.job_title
-  # Eng roles, too high level
-  if "Principle" in test_text: return test_text
-  if "Principal" in test_text: return test_text
-  if "Distinguished" in test_text: return test_text
-  # intern, part time and lower-level
-  if "Intern" in test_text: return test_text
-  if "University Graduate" in test_text: return test_text
-  # Doctorate position, undercertified
-  if "PhD" in test_text: return test_text
-  if "PHD" in test_text: return test_text
-  # Management
-  if "Manager" in test_text: return test_text
-  if "Mgr" in test_text: return test_text
-  # Other Fields
-  if "Advocate" in test_text: return test_text
-  if "Artist" in test_text: return test_text
-  if "Lawyer" in test_text: return test_text
-  if "Legal" in test_text: return test_text
-  if "Product Design" in test_text: return test_text
-  if "Professional Learn" in test_text: return test_text
-  if "Research Scientist" in test_text: return test_text
-  return False
-
-def test_6years_experience(report_item):
-  test_text = extract_ad_text(report_item)
-  years_asked = re.findall(r'((\d)\++ years of [a-zA-Z ]*)', test_text, re.IGNORECASE)
-  years_asked = years_asked + re.findall('((\d)\+ years\' experience)', test_text, re.IGNORECASE)
-  for y in years_asked:
-    if int(y[1]) > 5: return y[0]
-  return False
-
-def test_wrong_specialization(report_item):
-  test_text = extract_ad_text(report_item)
-  output_text = "Underqualified field - reference to {}."
-  # Security works its way into a lot of descriptions apropos of nothing.
-  # It's really only a meaningful find in the job title.
-  if "security" in report_item.job_title: return output_text.format("Security")
-  if "Security" in report_item.job_title: return output_text.format("Security")
-
-  if "IT" in report_item.job_title: return output_text.format("IT")
-
-  if "iOS" in report_item.job_title: return output_text.format("iOS")
-  if "Swift" in test_text: return output_text.format("Swift")
-  if "swift" in test_text: return output_text.format("swift")
-
-  if "Copywrite" in test_text: return output_text.format("Copywrite")
-  if "copywrite" in test_text: return output_text.format("copywrite")
-  if "Copywriting" in test_text: return output_text.format("Copywriting")
-  if "copywriting" in test_text: return output_text.format("copywriting")
-
-  if "Windows Server" in test_text: return output_text.format("Windows Server")
-  if "Windows server" in test_text: return output_text.format("Windows server")
-  if "windows server" in test_text: return output_text.format("windows server")
-
-  if "Embedded Systems" in test_text: return output_text.format("Embedded Systems")
-  if "Embedded systems" in test_text: return output_text.format("Embedded Systems")
-  if "embedded systems" in test_text: return output_text.format("Embedded Systems")
-  if "Embedded Device" in test_text: return output_text.format("Embedded Device")
-  if "Embedded device" in test_text: return output_text.format("Embedded Device")
-  if "embedded device" in test_text: return output_text.format("Embedded Device")
-  if "Embedded Software" in test_text: return output_text.format("Embedded Software")
-  if "Embedded software" in test_text: return output_text.format("Embedded Software")
-  if "embedded software" in test_text: return output_text.format("Embedded Software")
-
-  return False
-
-def test_wrong_country(report_item):
-  test_text = extract_ad_text(report_item)
-  output_text = "Bad country - reference to {}."
-
-  if "Canada" in test_text: return output_text.format("Canada (CA)")
-  if "CA" in test_text: return output_text.format("Canada (CA)")
-  if "United Kingdom" in test_text: return output_text.format("United Kingdom (UK)")
-  if "UK" in test_text: return output_text.format("United Kingdom (UK)")
-  if "Poland" in test_text: return output_text.format("Poland (PL)")
-  if "PL" in test_text: return output_text.format("Poland (PL)")
-  if "India" in test_text: return output_text.format("India")
-
-  return False
-
-def test_unusual_ad_text(report_item):
-  test_text = extract_ad_text(report_item)
-  output_text = "Ad text seems unusual: contains {}."
-
-  if len(test_text) < 1: return output_text.format("nothing")
-  if "Job Not Found" in test_text: return output_text.format("'Job Not Found'")
-  if "Job not found" in test_text: return output_text.format("'Job Not Found'")
-  if "job not found" in test_text: return output_text.format("'Job Not Found'")
-  if "No Longer Accepting Applications" in test_text: return output_text.format("'No Longer Accepting Applications'")
-  if "No longer accepting applications" in test_text: return output_text.format("'No Longer Accepting Applications'")
-  if "no longer accepting applications" in test_text: return output_text.format("'No Longer Accepting Applications'")
-
+# Prompt user about ignoring item, apply asked-for change,
+# report if change was made
 def ask_ignore_item(report_item, test_string):
  print(extract_ad_text(report_item))
  print(report_item)
- print(test_string)
+ print(test_string.strip())
  command = None
  while command != "y" and command != "n":
    command = input("Ignore Job (y/n)? ")
- if command == "n": return
-
+ if command == "n": return False
  report_item.is_ignored = True
+ return True
+
+# Checks the title for terms that imply low-utility
+def test_job_title(report_item, ignore_item_ui_fn):
+  prompt_text = "Title suggests qualification issues: {}\nTitle: " + report_item.job_title
+  ignorecase_items = ["security",
+                      "principal",
+                      "principle",
+                      "distinguished",
+                      "VP",
+                      "intern",
+                      "university grad",
+                      "PhD",
+                      "Manager",
+                      "Mgr",
+                      "Advocate",
+                      "Lawyer",
+                      "Legal",
+                      "Artist",
+                      "Design",
+                      "Professional Learn",
+                      "Research Scientist"]
+  preservecase_items = ["IT",
+                        "iOS"]
+  # 'in' statement outperforms regex for simple string finding
+  for term in ignorecase_items:
+    if term.lower() in report_item.job_title.lower():
+      if ignore_item_ui_fn(report_item, prompt_text.format(term)):
+        return True
+  for term in preservecase_items:
+    if term in report_item.job_title:
+      if ignore_item_ui_fn(report_item, prompt_text.format(term)):
+        return True
+  return False
+
+
+def test_experience_gt6years(report_item, ignore_item_ui_fn):
+  test_text = extract_ad_text(report_item)
+  query_text = "Job seems to require >6y experience: {}"
+  years_asked = re.findall(r'((\d+)\++ years.*(\n|$))', test_text, re.IGNORECASE)
+  for y in years_asked:
+    if int(y[1]) > 5: 
+      if ignore_item_ui_fn(report_item, query_text.format(y[0])):
+        return True
+  return False
+
+
+def test_body_unfamiliar_technology(report_item, ignore_item_ui_fn):
+  test_text = extract_ad_text(report_item)
+  prompt_text = "Job references technologies that you're unfamiliar with: '{}'"
+  ignorecase_items = ["windows server",
+                      "copywrite",
+                      "copywriting"]
+  # 'in' statement outperforms regex for simple string finding
+  for term in ignorecase_items:
+    if term.lower() in report_item.job_title.lower():
+        if ignore_item_ui_fn(report_item, prompt_text.format(term)):
+          return True
+  return False
+
+
+def test_body_post_removed(report_item, ignore_item_ui_fn):
+  test_text = extract_ad_text(report_item)
+  query_text = "Job may no longer be present. Found text: '{}'"
+  ignorecase_items = ["job not found",
+                      "no longer accepting applications"]
+  # 'in' statement outperforms regex for simple string finding
+  for term in ignorecase_items:
+    if term.lower() in report_item.job_title.lower():
+        if ignore_item_ui_fn(report_item, prompt_text.format(term)):
+          return True
+  return False
+
+
+def test_body_wrong_country(report_item, ignore_item_ui_fn):
+  test_text = extract_ad_text(report_item)
+  prompt_text = "Bad country - possible reference to {}."
+
+  ignorecase_items = ["Canada",
+                      "United Kingdom",
+                      "Poland",
+                      "India"]
+  # Country codes are likely to show up as parts of words, capital matches are
+  # the only thing that works
+  # Note that we can't include any 2-letter code for a US state/territory/city
+  preservecase_items = ["UK",
+                        "PL"]
+  # 'in' statement outperforms regex for simple string finding
+  for term in ignorecase_items:
+    if term.lower() in report_item.job_title.lower():
+      if ignore_item_ui_fn(report_item, prompt_text.format(term)):
+        return True
+  for term in preservecase_items:
+    if term in report_item.job_title:
+      if ignore_item_ui_fn(report_item, prompt_text.format(term)):
+        return True
+  return False
+
 
 def inspect(report_item):
   if report_item.is_ignored: return
-  test_result = test_job_title(report_item)
-  if test_result:
-      ask_ignore_item(report_item, "Title seems irrelevant: {}".format(test_result))
-  
-  if report_item.is_ignored: return
-  test_result = test_unusual_ad_text(report_item)
-  if test_result:
-      ask_ignore_item(report_item, test_result)
+  # A function that accepts a report item and returns a Boolean
+  # representing whether an update happened. We expect it to prompt
+  # user
+  ignore_item_fn = ask_ignore_item
 
-  if report_item.is_ignored: return
-  test_result = test_6years_experience(report_item)
-  if test_result:
-      ask_ignore_item(report_item, "Job seems to require >6y experience.: {}".format(test_result))
-  
-  if report_item.is_ignored: return
-  test_result = test_wrong_specialization(report_item)
-  if test_result:
-      ask_ignore_item(report_item, test_result)
+  if test_job_title(report_item, ignore_item_fn): return
+  if test_body_post_removed(report_item, ignore_item_fn): return
+  if test_experience_gt6years(report_item, ignore_item_fn): return
+  if test_body_wrong_country(report_item, ignore_item_fn): return
+  if test_body_unfamiliar_technology(report_item, ignore_item_fn): return
 
 
 if __name__ == "__main__":
