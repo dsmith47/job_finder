@@ -1,5 +1,6 @@
 import sys
 
+from jc_lib.companies import ALL_CRAWLERS 
 from jc_lib.companies.Google import GoogleCrawler
 from jc_lib.companies.Apple import AppleCrawler
 from jc_lib.companies.Microsoft import MicrosoftCrawler
@@ -14,20 +15,11 @@ if __name__ == "__main__":
 
   crawler = None
   time = "time placeholder"
-  if crawler_code == "Google":
-    crawler = GoogleCrawler(time)
-  elif crawler_code == "Apple":
-    crawler = AppleCrawler(time)
-  elif crawler_code == "Microsoft":
-    crawler = MicrosoftCrawler(time)
-  elif crawler_code == "Amazon":
-    crawler = AmazonCrawler(time)
-  elif crawler_code == "Netflix":
-    crawler = NetflixCrawler(time)
-  elif crawler_code == "Adobe":
-    crawler = AdobeCrawler(time)
-  elif crawler_code == "Meta":
-    crawler = MetaCrawler(time)
+
+  for c in ALL_CRAWLERS:
+    if c.COMPANY_NAME == crawler_code:
+      crawler = c(time)
+      break
 
   report_items = []
   if len(sys.argv) > 2:
