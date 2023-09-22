@@ -26,7 +26,6 @@ class NvidiaCrawler(SeleniumCrawler):
 
   # Need to page on number of jobs, not pages
   def crawl_page(self, url):
-    i = 0
     print("Scraping {}".format(url))
     self.driver.get(url)
     web_object = BeautifulSoup(self.driver.find_element(By.XPATH, "*").get_attribute('outerHTML'), "html.parser")
@@ -54,7 +53,6 @@ class NvidiaCrawler(SeleniumCrawler):
     link_items = self.driver.find_elements(By.TAG_NAME, "a")
     time.sleep(10)
     link_items = self.driver.find_elements(By.XPATH, "//*[@href]")
-    print(link_items)
     for a in link_items:
       job_title = ''
       job_url = None
