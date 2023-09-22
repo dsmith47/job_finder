@@ -29,5 +29,8 @@ if __name__ == "__main__":
     item = crawler.post_process(i, crawler.driver)
     print(str(item) + i.original_ad + "\n")
     report_items.append(item)
+  item_count = 0
   for i in report_items:
     print(str(i) + i.original_ad + "\n")
+    item_count += 1
+  print("Found {} items".format(item_count))
