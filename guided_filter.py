@@ -34,6 +34,7 @@ def test_job_title(report_item, ignore_item_ui_fn):
                       "principal",
                       "principle",
                       "distinguished",
+                      "director",
                       "VP",
                       "intern",
                       "university grad",
