@@ -31,6 +31,7 @@ def ask_ignore_item(report_item, test_string):
 def test_job_title(report_item, ignore_item_ui_fn):
   prompt_text = "Title suggests qualification issues: {}\nTitle: " + report_item.job_title
   ignorecase_items = ["security",
+                      "staff software engineer",
                       "principal",
                       "principle",
                       "distinguished",
