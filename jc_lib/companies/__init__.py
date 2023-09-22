@@ -6,6 +6,7 @@ from .Netflix import NetflixCrawler
 from .Meta import MetaCrawler
 from .Adobe import AdobeCrawler
 from .Nvidia import NvidiaCrawler
+from .Oracle import OracleCrawler
 
 # Crawlers that can be run in parallel
 PARALLEL_CRAWLERS = [
@@ -15,7 +16,8 @@ PARALLEL_CRAWLERS = [
   AmazonCrawler,
   NetflixCrawler,
   AdobeCrawler,
-  NvidiaCrawler
+  NvidiaCrawler,
+  OracleCrawler
 ]
 
 # Crawlers that can't run alongside any others 
