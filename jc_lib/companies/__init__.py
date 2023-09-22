@@ -10,6 +10,7 @@ from .Oracle import OracleCrawler
 from .Dropbox import DropboxCrawler
 from .Atlassian import AtlassianCrawler
 from .Salesforce import SalesforceCrawler
+from .Twilio import TwilioCrawler
 
 # Crawlers that can be run in parallel
 PARALLEL_CRAWLERS = [
@@ -23,7 +24,8 @@ PARALLEL_CRAWLERS = [
   OracleCrawler,
   DropboxCrawler,
   AtlassianCrawler,
-  SalesforceCrawler
+  SalesforceCrawler,
+  TwilioCrawler
 ]
 
 # Crawlers that can't run alongside any others 
