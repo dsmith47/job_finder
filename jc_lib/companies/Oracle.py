@@ -50,7 +50,6 @@ class OracleCrawler(SeleniumCrawler):
 
   def extract_job_list_items(self, bs_obj):
     report_items = []
-    link_items = self.driver.find_elements(By.XPATH, "//a[contains(@href, '{}')]".format(self.url_root))
     link_items = bs_obj.find_all(href=True)
     for a in link_items:
       job_title = ''
