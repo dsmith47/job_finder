@@ -1,9 +1,9 @@
 import time
-from jc_lib.crawlers import SoupCrawler
+from jc_lib.crawlers import SeleniumCrawler
 from jc_lib.reporting import ReportItem
 from selenium.webdriver.common.by import By
 
-class AtlassianCrawler(SoupCrawler):
+class AtlassianCrawler(SeleniumCrawler):
   COMPANY_NAME = "Atlassian"
   JOB_SITE_URLS = [ # All jobs (Remote)
     "https://www.atlassian.com/company/careers/all-jobs?team=Engineering%2CSite%20Reliability%20Engineering&location=United%20States&search=",
