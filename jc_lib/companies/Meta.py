@@ -54,7 +54,10 @@ class MetaCrawler(SeleniumCrawler):
           print("DEBUG EVENT: Meta unparsable text: {}".format(text_items))
           continue
         job_title = page_text[7]
-        job_text = '\n'.join(page_text[11:])
+        j = len(page_text) - 1
+        while j > 0 and "Related Job Openings" not in page_text[j]: j -= 1
+        if j == 0: j = len(page_text) - 1
+        job_text = '\n'.join(page_text[11:j])
         job_url = self.driver.current_url
         print("PROCESSED: {}".format(job_url))
         report_items.append(self.make_report_item(job_title, job_text, job_url))
