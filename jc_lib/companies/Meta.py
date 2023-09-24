@@ -51,7 +51,7 @@ class MetaCrawler(SeleniumCrawler):
 
         page_text = text_items[0].split('\n')
         if len(page_text) < 12:
-          print("DEBUG EVENT: Meta unparsable text: {}".format(text_items))
+          print("DEBUG EVENT: Meta unparsable text: {} for url: {}".format(text_items, self.driver.current_url))
           continue
         job_title = page_text[7]
         j = len(page_text) - 1
