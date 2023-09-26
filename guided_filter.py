@@ -66,9 +66,9 @@ def test_job_title(report_item, ignore_item_ui_fn):
 def test_experience_gt6years(report_item, ignore_item_ui_fn):
   test_text = extract_ad_text(report_item)
   query_text = "Job seems to require >6y experience: {}"
-  years_asked = re.findall(r'((\d+)\++ years.*(\n|$))', test_text, re.IGNORECASE)
+  years_asked = re.findall(r'((\n|^)(\d+)\++ years.*(\n|$))', test_text, re.IGNORECASE)
   for y in years_asked:
-    if int(y[1]) > 5: 
+    if int(y[2]) > 5: 
       if ignore_item_ui_fn(report_item, query_text.format(y[0])):
         return True
   return False
