@@ -13,6 +13,7 @@ from .Salesforce import SalesforceCrawler
 from .Twilio import TwilioCrawler
 from .Databricks import DatabricksCrawler
 from .Snowflake import SnowflakeCrawler
+from .Square import SquareCrawler
 
 # Crawlers that can be run in parallel
 PARALLEL_CRAWLERS = [
@@ -29,7 +30,8 @@ PARALLEL_CRAWLERS = [
   SalesforceCrawler,
   TwilioCrawler,
   DatabricksCrawler,
-  SnowflakeCrawler
+  SnowflakeCrawler,
+  SquareCrawler
 ]
 
 # Crawlers that can't run alongside any others 
