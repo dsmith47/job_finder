@@ -85,7 +85,7 @@ if __name__ == "__main__":
   parser.add_argument('--output-dir', type=str, default="output/")
   parser.add_argument('--num-crawlers', type=int, default=7, help="The number of workers to commit to web crawling (min 1)")
   parser.add_argument('--num-item-processors', type=int, default=1, help="The number of workers to commit to processing items produced in crawling (min 1)")
-  parser.add_argument('--use-crawlers', type=list_of_strings, default="")
+  parser.add_argument('--include-crawlers', type=list_of_strings, default="")
   parser.add_argument('--exclude-crawlers', type=list_of_strings, default="")
 
   args = parser.parse_args()
