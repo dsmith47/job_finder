@@ -42,9 +42,10 @@ def crawl_worker(input_queue, now_datestring, post_process_queue, output_queue):
           post_process_queue.put((item, crawler_constructor, now_datestring))
         else:
           output_queue.put(item)
-    except:
+    except Exception as e:
       print("CRAWL ERROR\nError in crawling {}\nOn {}"
               .format(crawler_constructor.COMPANY_NAME, crawler_url))
+      print(e)
   output_queue.put(None)
 
 # Side process for crawlers that need their job items post-processed.
@@ -63,7 +64,7 @@ def post_process_worker(post_process_queue, output_queue):
       now_datestring = item[2]
       crawler = crawler_constructor(now_datestring, driver=driver)
       output_queue.put(crawler.post_process(report_item, driver))
-    except e:
+    except Exception as e:
       print("POST-PROCESS ERROR for item\n{}".format(str(item)))
       print(e)
   output_queue.put(None)
