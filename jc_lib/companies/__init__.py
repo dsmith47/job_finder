@@ -14,6 +14,7 @@ from .Twilio import TwilioCrawler
 from .Databricks import DatabricksCrawler
 from .Snowflake import SnowflakeCrawler
 from .Square import SquareCrawler
+from .Snap import SnapCrawler
 
 # Crawlers that can be run in parallel
 PARALLEL_CRAWLERS = [
@@ -31,7 +32,8 @@ PARALLEL_CRAWLERS = [
   TwilioCrawler,
   DatabricksCrawler,
   SnowflakeCrawler,
-  SquareCrawler
+  SquareCrawler,
+  SnapCrawler
 ]
 
 # Crawlers that can't run alongside any others 
