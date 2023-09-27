@@ -36,7 +36,6 @@ class TwilioCrawler(SeleniumCrawler):
     button_element = None
     try:
       button_element = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.XPATH, "//button/*[text()='Remote - US']")))
-      print(button_element.get_attribute("outerHTML"))
       self.driver.execute_script("arguments[0].scrollIntoView(true);",button_element);
       # For some reason we need to wait between scroll requests.
       # Something about js asynchronicity?
@@ -61,6 +60,8 @@ class TwilioCrawler(SeleniumCrawler):
       job_url = None
       if a['href'].startswith(self.url_root):
         job_title = a.text.strip().split('\n')[0]
+        job_title = job_title.replace("Remote - US", "")
+        job_title = job_title.replace("View Details", "")
         job_url = a['href']
       if not job_url: continue
       report_items.append(self.make_report_item(job_title=job_title, job_url=job_url))
@@ -70,7 +71,6 @@ class TwilioCrawler(SeleniumCrawler):
     print("POST-PROCESSING: {}".format(report_item.url))
     bs_obj = self.query_page(report_item.url)
     text_items = [i.get_text() for i in bs_obj.findAll(text=True) if len(i.get_text().strip()) > 0]
-    print(text_items)
     j = 0
     while j < len(text_items) and 'Apply for this Job' not in text_items[j]: j += 1
     if j == 0: j = len(text_items) - 1
