@@ -21,11 +21,6 @@ class DatabricksCrawler(SeleniumCrawler):
   # Need to page on number of jobs, not pages
   def crawl_page(self, url):
     print("Scraping {}".format(url))
-    """
-    web_object = self.query_page(url);
-    new_postings = self.extract_job_list_items(web_object)
-    postings = new_postings
-    """
     report_items = [] 
     self.driver.get(url)
     time.sleep(60)
@@ -38,10 +33,7 @@ class DatabricksCrawler(SeleniumCrawler):
       if self.url_root not in li.get_attribute("href"): continue
       if "open-positions" in li.get_attribute("href"): continue
       if not re.match("{}/.*\d+".format(self.url_root), li.get_attribute("href")): continue
-      print(li.get_attribute("href"))
-      print(li.text)
       text_items = [i.text for i in li.find_elements(By.XPATH, ".//*")]
-      print(text_items)
       if 'Remote' not in text_items[-1] and 'New York' not in text_items[-1]: continue
       job_title = text_items[0]
       job_url = li.get_attribute("href")
