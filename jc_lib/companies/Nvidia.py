@@ -56,7 +56,6 @@ class NvidiaCrawler(SeleniumCrawler):
     for a in link_items:
       job_title = ''
       job_url = None
-      print(a.get_attribute('href'))
       if not a.get_attribute('href'): continue
       if not a.get_attribute('href').startswith(self.url_root): continue
 
