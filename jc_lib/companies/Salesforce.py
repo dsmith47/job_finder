@@ -51,11 +51,9 @@ class SalesforceCrawler(SeleniumCrawler):
     link_items = self.driver.find_elements(By.TAG_NAME, "a")
     time.sleep(10)
     link_items = self.driver.find_elements(By.XPATH, "//*[@href]")
-    print(link_items)
     for a in link_items:
       job_title = ''
       job_url = None
-      print(a.get_attribute('href'))
       if not a.get_attribute('href'): continue
       if not a.get_attribute('href').startswith(self.url_root): continue
 
