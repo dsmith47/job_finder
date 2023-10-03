@@ -183,7 +183,6 @@ if __name__ == "__main__":
   # Interactive read-test-write
   for row in file_reader:
     report_item = ReportItem.from_row(header, row)
-    inspect(report_item)
     user_signal = None
     for test in tests:
       if report_item.is_ignored: break
