@@ -1,6 +1,8 @@
 import csv
 import sys
 
+from datetime import datetime
+
 from jc_lib.reporting import ReportItem
 
 if __name__ == "__main__":
@@ -17,6 +19,9 @@ if __name__ == "__main__":
   for row in file_reader:
     report_item = ReportItem.from_row(header, row)
     if report_item.is_ignored: continue
+    if datetime.strptime(report_item.date_accessed, '%Y-%m-%d %H:%M') < \
+     datetime.strptime(report_item.date_checked, '%Y-%m-%d %H:%M'):
+      continue
     output_writer.writerow(report_item.as_array())
 
   infile.close()
