@@ -196,11 +196,13 @@ if __name__ == "__main__":
       if all_jobs[job.url].date_applied and len(all_jobs[job.url].date_applied) < 1:
         all_jobs[job.url].date_applied = job.date_applied
       all_jobs[job.url].date_accessed = max(all_jobs[job.url].date_created, job.date_created)
-      all_jobs[job.url].date_checked = max(all_jobs[job.url].date_created, job.date_created)
       if all_jobs[job.url].original_ad != job.original_ad \
        or (len(all_jobs[job.url].updated_ads)>0 \
            and all_jobs[job.url].updated_ads[-1] != job.original_ad + "\n["+job.date_created+"]\n"):
         all_jobs[job.url].updated_ads.append(job.original_ad + "\n["+job.date_created+"]\n")
+  # Mark all jobs as having been checked now
+  for url in all_jobs:
+    all_jobs[url].date_checked = now_datestring
 
   ## Write output
   for job in all_jobs.values():
