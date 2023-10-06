@@ -29,7 +29,6 @@ class NetflixCrawler(SeleniumCrawler):
       output.append(self.make_report_item(job_title=job_title, job_url=job_url))
     return output
 
-  # Assumes the google content page stats with the Job title, and the rest can safely be included as text
   def post_process(self, report_item, driver):
     print("POST-PROCESSING: {}".format(report_item.url))
     bs_obj = self.query_page(report_item.url)
@@ -39,6 +38,11 @@ class NetflixCrawler(SeleniumCrawler):
     while i < len(text_nodes) and text_nodes[i].find(report_item.job_title) == -1: i += 1
     i += 1
     while i < len(text_nodes) and text_nodes[i].find(report_item.job_title) == -1: i += 1
-    text_items = [t for t in text_nodes[i+1:] if not t.isspace()]
+    # Find the second of the 2 'APPLY NOW' buttons
+    j = i+1
+    while j < len(text_nodes) and text_nodes[j].find("APPLY NOW") == -1: j += 1
+    j += 1
+    while j < len(text_nodes) and text_nodes[j].find("APPLY NOW") == -1: j += 1
+    text_items = [t for t in text_nodes[i+1:j] if not t.isspace()]
     report_item.original_ad = '\n'.join(text_items)
     return report_item
