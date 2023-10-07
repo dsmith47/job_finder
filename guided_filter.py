@@ -69,12 +69,18 @@ def test_job_title(report_item, ignore_item_ui_fn):
 
 def test_experience_gt6years(report_item, ignore_item_ui_fn):
   test_text = extract_ad_text(report_item)
-  query_text = "Job seems to require >6y experience: {}"
-  years_asked = re.findall(r'((\n|^)(\d+)\++ years.*(\n|$))', test_text, re.IGNORECASE)
+  query_text = "Job seems to require >6y experience:\n\t{}"
+  # So, the old behavior works better for some companies that brag about *their*
+  # experience in descriptions, so I'm leaving dead code commented out b/c it
+  # will become useful as soon as we have test behavior that changes across
+  # multiple companies.
+  #years_asked = re.findall(r'((\n|^)(\d+)\++ years.*(\n|$))', test_text, re.IGNORECASE)
+  years_asked = re.findall(r'((\n|^)*(\d+)\++ years.*(\n*))', test_text, re.IGNORECASE)
   user_signal = SIGNAL_CONTINUE
   for y in years_asked:
     if int(y[2]) > 5: 
-      user_signal = ignore_item_ui_fn(report_item, query_text.format(y[0]))
+      #user_signal = ignore_item_ui_fn(report_item, query_text.format(y[0]))
+      user_signal = ignore_item_ui_fn(report_item, query_text.format("\n\t".join([y[0] for y in years_asked])))
       if user_signal == SIGNAL_IGNORE: return user_signal
       elif user_signal == SIGNAL_QUIT: return user_signal
   return user_signal
