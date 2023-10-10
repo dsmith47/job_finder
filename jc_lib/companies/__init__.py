@@ -17,6 +17,7 @@ from .Square import SquareCrawler
 from .Snap import SnapCrawler
 from .Cruise import CruiseCrawler
 from .PayPal import PayPalCrawler
+from .Pinterest import PinterestCrawler
 
 # Crawlers that can be run in parallel
 PARALLEL_CRAWLERS = [
@@ -37,7 +38,8 @@ PARALLEL_CRAWLERS = [
   SquareCrawler,
   SnapCrawler,
   CruiseCrawler,
-  PayPalCrawler
+  PayPalCrawler,
+  PinterestCrawler
 ]
 
 # Crawlers that can't run alongside any others 
