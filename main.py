@@ -65,7 +65,7 @@ def post_process_worker(post_process_queue, output_queue):
       crawler = crawler_constructor(now_datestring, driver=driver)
       output_queue.put(crawler.post_process(report_item, driver))
     except Exception as e:
-      print("POST-PROCESS ERROR for item\n{}".format(str(item)))
+      print("POST-PROCESS ERROR for:\n\tcrawler: {}\n\titem\n{}".format(item[1], str(item[0])))
       print(e)
   output_queue.put(None)
 
