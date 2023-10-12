@@ -16,7 +16,7 @@ class StripeCrawler(AbstractCrawler):
      StripeCrawler.JOB_SITE_URLS,
      has_post_processing=True,
      driver=driver)
-    self.next_page = lambda u: super().ITERATE_URL(u, 100)
+    self.next_page = lambda u: self.ITERATE_URL(u, 100)
     self.load_page_content = lambda u: self.REPEATED_BUTTON_PRESS("Load more jobs", u)
 
   def extract_job_elems_from_page(self, url):
@@ -31,11 +31,5 @@ class StripeCrawler(AbstractCrawler):
   def post_process(self, report_item, driver=None):
     self.driver.get(report_item.url)
     text_elems = [e.text for e in self.driver.find_elements(By.XPATH, "*") if not e.text.isspace()]
-    print(text_elems)
-    """
-    text_elems = text_elems[0].split("\n")
-    j = len(text_elems) - 1
-    while j > 0 and text_elems[j] != "Quick clicks": j -= 1
-    report_item.original_ad = '\n'.join(text_elems[:j])
-    """
+    report_item.original_ad = '\n'.join(text_elems)
     return report_item
