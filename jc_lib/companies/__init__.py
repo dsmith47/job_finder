@@ -23,6 +23,7 @@ from .Instacart import InstacartCrawler
 from .Uber import UberCrawler
 from .Spotify import SpotifyCrawler
 from .Stripe import StripeCrawler
+from .Slack import SlackCrawler
 
 # Crawlers that can be run in parallel
 PARALLEL_CRAWLERS = [
@@ -49,7 +50,8 @@ PARALLEL_CRAWLERS = [
   InstacartCrawler,
   UberCrawler,
   SpotifyCrawler,
-  StripeCrawler
+  StripeCrawler,
+  SlackCrawler
 ]
 
 # Crawlers that can't run alongside any others 

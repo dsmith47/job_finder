@@ -19,7 +19,6 @@ class StripeCrawler(AbstractCrawler):
      has_post_processing=True,
      driver=driver)
     self.next_page = lambda u: self.ITERATE_URL(u, 100)
-    self.load_page_content = lambda u: self.REPEATED_BUTTON_PRESS("Load more jobs", u)
     self.engine = SeleniumEngine(self.driver)
 
   def extract_job_elems_from_page(self, url):

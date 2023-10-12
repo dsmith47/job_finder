@@ -232,20 +232,23 @@ class AbstractCrawler():
 
   def crawl(self):
     print("Crawling for {}...".format(self.company_name))
-    new_jobs = []
+    new_jobs = dict()
     for url in self.job_site_urls:
       print("Crawl {} at {}".format(self.company_name, url))
-      new_jobs = new_jobs + self.extract_jobs_from_site(url)
-    return [j for j in new_jobs if j is not None]
+      for j in self.extract_jobs_from_site(url):
+        new_jobs[j.url] = j
+    return [j for j in new_jobs.values() if j is not None]
 
   # Get jobs from a root url, including paging through lists
   # holds state across instances of extract_jobs_from_page
   def extract_jobs_from_site(self, url):
     print("Extracting job items from {}...".format(url))
     jobs_agg = []
+    self._CURRENT_PAGE_INDEX = 0 
     while True:
       next_url = self.next_page(url)
       if not next_url: break
+      self.engine.get_page(next_url)
       self.load_page_content(next_url)
       new_jobs = self.extract_job_elems_from_page(next_url) 
       if len(new_jobs) < 1: break
@@ -276,7 +279,7 @@ class AbstractCrawler():
   ################################################################
 
   # next_page ####################################################
-  # use url once and then fail
+  # use url once and then stop
   def VISIT_ONCE(self,url):
     if self._CURRENT_PAGE_INDEX > 0: return None
 

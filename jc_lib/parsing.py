@@ -10,7 +10,7 @@ class TextUtils():
   # find first instance of search_str and return lhs
   def seek_from_start_lhs(l, search_str):
     i = 0
-    while i < len(l) and l[i] != search_str:
+    while i < len(l) and not l[i].startswith(search_str):
       i += 1
     if i == len(l): i = 0
     return TextUtils.lhs(l, i)
@@ -18,7 +18,7 @@ class TextUtils():
   # find first instance of search_str and return rhs
   def seek_from_start_rhs(l, search_str):
     i = 0
-    while i < len(l) and l[i] != search_str:
+    while i < len(l) and not l[i].startswith(search_str):
       i += 1
     if i == len(l): i = 0
     return TextUtils.rhs(l, i)   
@@ -26,7 +26,7 @@ class TextUtils():
   # find last instance of search_str and return lhs
   def seek_from_end_lhs(l, search_str):
     i = len(l) - 1
-    while i > 0 and l[i] != search_str:
+    while i > 0 and not l[i].startswith(search_str):
       i -= 1
     if i == 0: i = len(l) - 1
     return TextUtils.lhs(l, i)
