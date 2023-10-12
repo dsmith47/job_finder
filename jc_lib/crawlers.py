@@ -7,6 +7,7 @@ from requests.exceptions import RequestException
 import time
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import TimeoutException as SeleniumTimeoutException
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.service import Service
@@ -173,3 +174,104 @@ class SeleniumCrawler(Crawler):
       WebDriverWait(self.driver, delay_time).until(delay)
     return BeautifulSoup(self.driver.find_element(By.XPATH, "*").get_attribute('outerHTML'), "html.parser")
 
+
+class AbstractCrawler():
+  def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[], has_post_processing=False, driver=None):
+    self.present_time = present_time
+    self.company_name = company_name
+    self.url_root = url_root
+    self.job_site_urls = job_site_urls
+    self.has_post_processing = has_post_processing
+    self.driver = driver
+    # Configure Selenium
+    if driver is None:
+      options = webdriver.ChromeOptions()
+      self.driver = Chrome(options=options)
+    # Internal state for functions
+    self._CURRENT_PAGE_INDEX = 0
+
+  def crawl(self):
+    print("Crawling for {}...".format(self.company_name))
+    new_jobs = []
+    for url in self.job_site_urls:
+      print("Crawl {} at {}".format(self.company_name, url))
+      new_jobs = new_jobs + self.extract_jobs_from_site(url)
+    return [j for j in new_jobs if j is not None]
+
+  # Get jobs from a root url, including paging through lists
+  # holds state across instances of extract_jobs_from_page
+  def extract_jobs_from_site(self, url):
+    print("Extracting job items from {}...".format(url))
+    jobs_agg = []
+    while True:
+      next_url = self.next_page(url)
+      if not next_url: break
+      self.load_page_content(next_url)
+      new_jobs = self.extract_job_elems_from_page(next_url) 
+      if len(new_jobs) < 1: break
+      jobs_agg = jobs_agg + new_jobs
+    return jobs_agg
+
+  # REQUIRED - Returns the next url with content for extraction
+  #  return None if there is no more content
+  def next_page(self, url):
+    return None
+
+  # OPTIONAL - do necessary interactions to load all page content
+  def load_page_content(self, url):
+    pass
+
+  # REQUIRED - takes all job items from a specific page
+  #  return Empty when there is nothing left to crawl
+  def extract_job_elems_from_page(self, url):
+    return []
+
+  # OPTIONAL - after each item is collected, runs optional logic
+  # on it before returning (adds detail to description text, etc)
+  def post_process(self, item, web_driver):
+    return item
+
+  ################################################################
+  # Predefined Functions #########################################
+  ################################################################
+
+  # next_page ####################################################
+  # use url once and then fail
+  def VISIT_ONCE(self,url):
+    if self._CURRENT_PAGE_INDEX > 0: return None
+
+    self._CURRENT_PAGE_INDEX += 1
+    return url
+
+  # load_page_content ############################################
+  # press the button until it can't be pressed anymore
+  def REPEATED_BUTTON_PRESS(self, button_element_query, url):
+    self.driver.get(url)
+    while True:
+      try:
+        button_element = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.XPATH, "//*[contains(text(),'{}')]".format(button_element_query))))
+      except SeleniumTimeoutException:
+        button_element = None
+      if not button_element: break
+      button_element.click()
+
+
+  ################################################################
+  # Utility Functions ############################################
+  ################################################################
+  def make_report_item(self, job_title='', job_text='', job_url=''):
+    date_created = self.present_time
+    applied = None
+    ignored = None
+    last_access = self.present_time
+    last_check = self.present_time
+
+    return ReportItem(self.company_name,
+      job_title,
+      job_url,
+      date_created,
+      applied,
+      ignored,
+      last_access,
+      last_check,
+      job_text)

@@ -21,6 +21,7 @@ from .Pinterest import PinterestCrawler
 from .Indeed import IndeedCrawler
 from .Instacart import InstacartCrawler
 from .Uber import UberCrawler
+from .Spotify import SpotifyCrawler
 
 # Crawlers that can be run in parallel
 PARALLEL_CRAWLERS = [
@@ -45,7 +46,8 @@ PARALLEL_CRAWLERS = [
   PinterestCrawler,
   IndeedCrawler,
   InstacartCrawler,
-  UberCrawler
+  UberCrawler,
+  SpotifyCrawler
 ]
 
 # Crawlers that can't run alongside any others 
