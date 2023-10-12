@@ -243,6 +243,12 @@ class AbstractCrawler():
     self._CURRENT_PAGE_INDEX += 1
     return url
 
+  # iterate by a certain number of elements
+  def ITERATE_URL(self,url,count):
+    new_url = url.format(self._CURRENT_PAGE_INDEX)
+    self._CURRENT_PAGE_INDEX += count
+    return new_url
+
   # load_page_content ############################################
   # press the button until it can't be pressed anymore
   def REPEATED_BUTTON_PRESS(self, button_element_query, url):
