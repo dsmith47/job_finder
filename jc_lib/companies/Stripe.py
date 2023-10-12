@@ -1,5 +1,7 @@
 import time
 from jc_lib.crawlers import AbstractCrawler
+from jc_lib.crawlers import SeleniumEngine 
+from jc_lib.parsing import TextUtils
 from jc_lib.reporting import ReportItem
 from selenium.webdriver.common.by import By
 
@@ -18,18 +20,19 @@ class StripeCrawler(AbstractCrawler):
      driver=driver)
     self.next_page = lambda u: self.ITERATE_URL(u, 100)
     self.load_page_content = lambda u: self.REPEATED_BUTTON_PRESS("Load more jobs", u)
+    self.engine = SeleniumEngine(self.driver)
 
   def extract_job_elems_from_page(self, url):
     report_items = []
-    job_elems = self.driver.find_elements(By.XPATH, "//*[contains(@href, '{}')]".format(self.url_root))
-    for e in job_elems:
-      job_title = e.text
-      job_url = e.get_attribute("href")
-      report_items.append(self.make_report_item(job_title=job_title, job_url=job_url))
+    for e in self.engine.get_href_elements(self.url_root):
+      report_items.append(self.make_report_item(job_title=e[0], job_url=e[1]))
     return report_items
 
   def post_process(self, report_item, driver=None):
     self.driver.get(report_item.url)
-    text_elems = [e.text for e in self.driver.find_elements(By.XPATH, "*") if not e.text.isspace()]
-    report_item.original_ad = '\n'.join(text_elems)
+    text_elems = self.engine.get_text_elements()
+    text_elems = [t.strip() for t in text_elems[0].split('\n')]
+    text_elems = TextUtils.seek_from_start_rhs(text_elems, "About Stripe")
+    text_elems = TextUtils.seek_from_end_lhs(text_elems, "Apply Now")
+    report_item.original_ad = "\n".join(text_elems)
     return report_item

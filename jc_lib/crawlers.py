@@ -175,6 +175,46 @@ class SeleniumCrawler(Crawler):
     return BeautifulSoup(self.driver.find_element(By.XPATH, "*").get_attribute('outerHTML'), "html.parser")
 
 
+class WebEngine():
+  def get_page(self, url):
+    pass
+  def get_href_elements(self, filter_str):
+    return []
+  def get_text_elements(self):
+    return []
+
+class SoupEngine(WebEngine):
+  def get_page(self, url):
+    pass
+
+  def get_href_elements(self, filter_str):
+    return []
+
+  def get_text_elements(self):
+    return []
+
+class SeleniumEngine(WebEngine):
+  def __init__(self, driver=None):
+    self.driver = driver
+    # Configure Selenium
+    if driver is None:
+      options = webdriver.ChromeOptions()
+      self.driver = Chrome(options=options)
+
+  def get_page(self, url):
+    self.driver.get(url)
+
+  def get_href_elements(self, filter_str):
+    output = []
+    job_elems = self.driver.find_elements(By.XPATH, "//*[contains(@href, '{}')]".format(filter_str))
+    for e in job_elems:
+      output.append((e.text, e.get_attribute("href")))
+    return output
+
+  def get_text_elements(self):
+    return [e.text.strip() for e in self.driver.find_elements(By.XPATH, "*") if not e.text.isspace()]
+
+
 class AbstractCrawler():
   def __init__(self, present_time, company_name=None, url_root=None, job_site_urls=[], has_post_processing=False, driver=None):
     self.present_time = present_time
