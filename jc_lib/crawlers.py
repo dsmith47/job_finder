@@ -208,7 +208,6 @@ class SeleniumEngine(WebEngine):
     output = []
     job_elems = self.driver.find_elements(By.XPATH, "//*[contains(@href, '{}')]".format(filter_str))
     for e in job_elems:
-      print(e.get_attribute('outerHTML'))
       output.append((e.text, e.get_attribute("href")))
     return output
 
