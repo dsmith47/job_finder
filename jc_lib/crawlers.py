@@ -213,7 +213,7 @@ class SeleniumEngine(WebEngine):
     return output
 
   def get_text_elements(self):
-    return [e.text.strip() for e in self.driver.find_elements(By.XPATH, "*") if not e.text.isspace()]
+    return [e.text.strip() for e in self.driver.find_elements(By.XPATH, "*") if len(e.text.strip()) > 0]
 
 
 class AbstractCrawler():
