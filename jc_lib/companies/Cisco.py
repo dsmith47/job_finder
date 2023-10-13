@@ -38,7 +38,7 @@ class CiscoCrawler(AbstractCrawler):
       child_elems = parent_elem.find_elements(By.XPATH, ".//*")
       location_elem = child_elems[3]
       alt_location_elem = child_elems[4]
-      if self.is_target_location(location_elem.text) or self.is_target_location(alt_location_elem.text): continue
+      if not self.is_target_location(location_elem.text) and not self.is_target_location(alt_location_elem.text): continue
       job_url = e.get_attribute("href")
       job_title = e.text
       report_items.append(self.make_report_item(job_title=job_title, job_url=job_url))
