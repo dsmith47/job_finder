@@ -1,13 +1,6 @@
 import sys
 
 from jc_lib.companies import ALL_CRAWLERS 
-from jc_lib.companies.Google import GoogleCrawler
-from jc_lib.companies.Apple import AppleCrawler
-from jc_lib.companies.Microsoft import MicrosoftCrawler
-from jc_lib.companies.Amazon import AmazonCrawler
-from jc_lib.companies.Netflix import NetflixCrawler
-from jc_lib.companies.Adobe import AdobeCrawler
-from jc_lib.companies.Meta import MetaCrawler
 
 
 if __name__ == "__main__":
