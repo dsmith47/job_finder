@@ -27,6 +27,7 @@ from .Slack import SlackCrawler
 from .Bloomberg import BloombergCrawler
 from .Cisco import CiscoCrawler
 from .IBM import IBMCrawler
+from .VMware import VMwareCrawler
 
 # Crawlers that can be run in parallel
 PARALLEL_CRAWLERS = [
@@ -57,7 +58,8 @@ PARALLEL_CRAWLERS = [
   SlackCrawler,
   BloombergCrawler,
   CiscoCrawler,
-  IBMCrawler
+  IBMCrawler,
+  VMwareCrawler
 ]
 
 # Crawlers that can't run alongside any others 

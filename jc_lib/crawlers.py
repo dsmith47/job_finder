@@ -275,7 +275,7 @@ class AbstractCrawler():
   # on it before returning (adds detail to description text, etc)
   def post_process(self, item, web_driver):
     return item
-
+  
   ################################################################
   # Predefined Functions #########################################
   ################################################################
