@@ -229,6 +229,7 @@ class AbstractCrawler():
       self.driver = Chrome(options=options)
     # Internal state for functions
     self._CURRENT_PAGE_INDEX = 0
+    self._PAGE_CONTENT_EXECUTIONS = 0
 
   def crawl(self):
     print("Crawling for {}...".format(self.company_name))
@@ -247,8 +248,9 @@ class AbstractCrawler():
     self._CURRENT_PAGE_INDEX = 0 
     while True:
       next_url = self.next_page(url)
-      if not next_url: break
-      self.engine.get_page(next_url)
+      if next_url is None: break
+      if next_url != self._CURRENT_PAGE_INDEX:
+        self.engine.get_page(next_url)
       self.load_page_content(next_url)
       new_jobs = self.extract_job_elems_from_page(next_url) 
       if len(new_jobs) < 1: break
@@ -292,10 +294,36 @@ class AbstractCrawler():
     self._CURRENT_PAGE_INDEX += count
     return new_url
 
+  def NEXT_BUTTON(self,url,button_element_query):
+    if self._CURRENT_PAGE_INDEX <= 0:
+      self._CURRENT_PAGE_INDEX += 1
+      return url
+    try:
+      button_element = self.driver.find_element(By.XPATH, button_element_query)
+    except NoSuchElementException:
+      button_element = None
+    if not button_element: return None
+    self.driver.execute_script("arguments[0].scrollIntoView(true);",button_element)
+    self.driver.execute_script("window.scrollBy(0,-100);")
+    button_element.click()
+    #time.sleep(120)
+    return self._CURRENT_PAGE_INDEX
+
   # load_page_content ############################################
   # press the button until it can't be pressed anymore
   def WAIT_LOAD_TIME(self, wait_time):
     time.sleep(wait_time)
+
+  def SINGLE_BUTTON_PRESS(self, button_element_query):
+    if self._PAGE_CONTENT_EXECUTIONS > 0: return
+    self._PAGE_CONTENT_EXECUTIONS += 1
+    time.sleep(1)
+    try:
+      button_element = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.XPATH, button_element_query)))
+    except SeleniumTimeoutException:
+      button_element = None
+    if not button_element: return
+    button_element.click()
 
   def REPEATED_BUTTON_PRESS(self, button_element_query, url):
     while True:
