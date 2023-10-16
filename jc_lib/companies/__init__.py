@@ -28,6 +28,7 @@ from .Bloomberg import BloombergCrawler
 from .Cisco import CiscoCrawler
 from .IBM import IBMCrawler
 from .VMware import VMwareCrawler
+from .Disney import DisneyCrawler
 
 # Crawlers that can be run in parallel
 PARALLEL_CRAWLERS = [
@@ -59,7 +60,8 @@ PARALLEL_CRAWLERS = [
   BloombergCrawler,
   CiscoCrawler,
   IBMCrawler,
-  VMwareCrawler
+  VMwareCrawler,
+  DisneyCrawler
 ]
 
 # Crawlers that can't run alongside any others 
