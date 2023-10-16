@@ -28,7 +28,6 @@ class DisneyCrawler(AbstractCrawler):
     report_items = []
     time.sleep(1)
     job_elems = self.driver.find_elements(By.XPATH, "//*[contains(@href, '{}')]".format("/job/"))
-    print(job_elems)
     for e in job_elems:
       child_elems = e.find_elements(By.XPATH, ".//*")
       if len(child_elems) < 1: continue
@@ -45,7 +44,7 @@ class DisneyCrawler(AbstractCrawler):
     for t in text_elems:
       texts = texts + t.split('\n')
     print(texts)
-    #texts = TextUtils.seek_from_start_rhs(texts, report_item.job_title)
-    #texts = TextUtils.seek_from_end_lhs(texts, "Apply")
+    texts = TextUtils.seek_from_start_rhs(texts, report_item.job_title)
+    texts = TextUtils.seek_from_end_lhs(texts, "APPLY NOW")
     report_item.original_ad = "\n".join(texts)
     return report_item
