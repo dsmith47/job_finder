@@ -23,7 +23,6 @@ class VMwareCrawler(AbstractCrawler):
      has_post_processing=True,
      driver=driver)
     self.next_page = lambda u: self.ITERATE_URL(u, 1)
-    # self.load_page_content = lambda u: self.SINGLE_BUTTON_PRESS("//*[contains(text(), 'Required only') and contains(@id, 'truste-consent-required')]")
     self.engine = SeleniumEngine(self.driver)
 
   def extract_job_elems_from_page(self, url):
