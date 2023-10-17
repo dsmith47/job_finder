@@ -43,7 +43,6 @@ class DisneyCrawler(AbstractCrawler):
     texts = []
     for t in text_elems:
       texts = texts + t.split('\n')
-    print(texts)
     texts = TextUtils.seek_from_start_rhs(texts, report_item.job_title)
     texts = TextUtils.seek_from_end_lhs(texts, "APPLY NOW")
     report_item.original_ad = "\n".join(texts)
