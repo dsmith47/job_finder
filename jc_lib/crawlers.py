@@ -304,9 +304,10 @@ class AbstractCrawler():
       button_element = None
     if not button_element: return None
     self.driver.execute_script("arguments[0].scrollIntoView(true);",button_element)
+    time.sleep(1)
     self.driver.execute_script("window.scrollBy(0,-100);")
+    time.sleep(1)
     button_element.click()
-    #time.sleep(120)
     return self._CURRENT_PAGE_INDEX
 
   # load_page_content ############################################
