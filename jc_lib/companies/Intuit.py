@@ -37,13 +37,11 @@ class IntuitCrawler(AbstractCrawler):
     return report_items
 
   def post_process(self, report_item, driver=None):
-    print(report_item)
     self.driver.get(report_item.url)
     text_elems = self.engine.get_text_elements()
     texts = []
     for t in text_elems:
       texts = texts + t.split('\n')
-    print(texts)
     texts = TextUtils.seek_from_start_rhs(texts, report_item.job_title)
     texts = TextUtils.seek_from_end_lhs(texts, "More about Intuit life")
     report_item.original_ad = "\n".join(texts)
