@@ -32,6 +32,7 @@ from .Disney import DisneyCrawler
 from .Splunk import SplunkCrawler
 from .Intuit import IntuitCrawler
 from .Intel import IntelCrawler
+from .ByteDance import ByteDanceCrawler
 
 # Crawlers that can be run in parallel
 PARALLEL_CRAWLERS = [
@@ -67,7 +68,8 @@ PARALLEL_CRAWLERS = [
   DisneyCrawler,
   SplunkCrawler,
   IntuitCrawler,
-  IntelCrawler
+  IntelCrawler,
+  ByteDanceCrawler
 ]
 
 # Crawlers that can't run alongside any others 

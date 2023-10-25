@@ -251,6 +251,7 @@ class AbstractCrawler():
       if next_url is None: break
       if next_url != self._CURRENT_PAGE_INDEX:
         self.engine.get_page(next_url)
+      print("Loading page content from: {} ...".format(next_url))
       self.load_page_content(next_url)
       new_jobs = self.extract_job_elems_from_page(next_url) 
       if len(new_jobs) < 1: break
@@ -293,6 +294,11 @@ class AbstractCrawler():
     new_url = url.format(self._CURRENT_PAGE_INDEX)
     self._CURRENT_PAGE_INDEX += count
     return new_url
+  
+  def ITERATE_URL_FROM_ONE(self,url,count):
+    if self._CURRENT_PAGE_INDEX == 0:
+      self._CURRENT_PAGE_INDEX = 1
+    return self.ITERATE_URL(url,count)
 
   def NEXT_BUTTON(self,url,button_element_query):
     if self._CURRENT_PAGE_INDEX <= 0:
