@@ -4,6 +4,7 @@ class ReportItem:
   ROW_JOB_TITLE_HEADER = "Job Title"
   ROW_URL_HEADER = "url"
   ROW_DATE_CREATED_HEADER = "Date Created"
+  ROW_LOCATION_HEADER = "Location"
   ROW_APPLIED_HEADER = "Applied?"
   ROW_IGNORED_HEADER = "Ignored?"
   ROW_LAST_DATE_ACCESSED_HEADER = "Last Date Accessed"
@@ -19,7 +20,8 @@ class ReportItem:
       ignored = False,
       last_access = None,
       last_check = None,
-      original_ad = None):
+      original_ad = None,
+      location = None):
     self.company = company
     self.job_title = job_title
     self.url = url
@@ -36,6 +38,8 @@ class ReportItem:
     self.original_ad = original_ad
     self.updated_ads = []
 
+    self.location = location
+
   def __str__(self):
     return self.format_row(
       self.company,
@@ -45,7 +49,8 @@ class ReportItem:
       self.date_applied,
       self.is_ignored,
       self.date_accessed,
-      self.date_checked)
+      self.date_checked,
+      self.location)
 
   @staticmethod
   def from_row(header,row):
@@ -57,14 +62,15 @@ class ReportItem:
       row[header.index(ReportItem.ROW_APPLIED_HEADER)],
       row[header.index(ReportItem.ROW_IGNORED_HEADER)],
       row[header.index(ReportItem.ROW_LAST_DATE_ACCESSED_HEADER)],
-      row[header.index(ReportItem.ROW_LAST_DATE_CHECKED_HEADER)])
-    if len(row) > 8:
-      item.updated_ads = row[8:]
+      row[header.index(ReportItem.ROW_LAST_DATE_CHECKED_HEADER)],
+      row[header.index(ReportItem.ROW_LOCATION_HEADER)])
+    if len(row) > 9:
+      item.updated_ads = row[9:]
     return item
 
   @staticmethod
-  def format_row(company,job_title,url,date_created,applied,ignored,last_access,last_check,original_ad="",updated_ads=[]):
-    output = '{},{},{},{},{},{},{},{},{}'.format(
+  def format_row(company,job_title,url,date_created,applied,ignored,last_access,last_check,location,original_ad="",updated_ads=[]):
+    output = '{},{},{},{},{},{},{},{},{},{}'.format(
       company,
       job_title,
       url,
@@ -73,6 +79,7 @@ class ReportItem:
       ignored,
       last_access,
       last_check,
+      location,
       original_ad)
     for ad in updated_ads:
       output = output + ',' + ad
@@ -84,6 +91,7 @@ class ReportItem:
       ReportItem.ROW_JOB_TITLE_HEADER,
       ReportItem.ROW_URL_HEADER,
       ReportItem.ROW_DATE_CREATED_HEADER,
+      ReportItem.ROW_LOCATION_HEADER,
       ReportItem.ROW_APPLIED_HEADER,
       ReportItem.ROW_IGNORED_HEADER,
       ReportItem.ROW_LAST_DATE_ACCESSED_HEADER,
@@ -95,6 +103,7 @@ class ReportItem:
       self.job_title,
       self.url,
       self.date_created,
+      self.location,
       self.date_applied,
       self.is_ignored,
       self.date_accessed,
