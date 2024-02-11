@@ -1,3 +1,5 @@
+import re
+
 from jc_lib.crawlers import SoupCrawler
 
 class GoogleCrawler(SoupCrawler):
@@ -20,7 +22,7 @@ class GoogleCrawler(SoupCrawler):
     link_items = bs_obj.find_all(href=True)
     for a in link_items:
       job_url = None
-      if a['href'].startswith('jobs/results/'):
+      if re.match(r'jobs/results/[0-9]', a['href']):
           job_url = self.url_root + a['href']
       if not job_url: continue
       output.append(self.make_report_item(job_url=job_url))
